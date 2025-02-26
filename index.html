@@ -4,10 +4,17 @@
     <title>Joshua Unraveled Lite</title>
     <style>
         body { background: linear-gradient(#D2B48C, #87CEEB); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #tree { width: 150px; height: 300px; background: green; }
+        #tree { width: 150px; height: 300px; background: green; transition: background 0.5s; }
+        #tree.glow { background: blue; }
     </style>
 </head>
 <body>
     <div id="tree"></div>
+    <script>
+        const tree = document.getElementById('tree');
+        tree.addEventListener('click', () => {
+            tree.classList.toggle('glow');
+        });
+    </script>
 </body>
 </html>
