@@ -4,27 +4,10 @@
     <title>Joshua Unraveled Lite</title>
     <style>
         body { background: linear-gradient(#D2B48C, #87CEEB); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #tree { width: 150px; height: 300px; background: url('https://images.unsplash.com/photo-1509993013289-edd1386a0d0f') no-repeat center; background-size: cover; filter: brightness(0.7); transition: filter 0.5s; }
-        #tree.glow { filter: brightness(1.5) hue-rotate(90deg) !important; -webkit-filter: brightness(1.5) hue-rotate(90deg) !important; }
+        #tree { width: 150px; height: 300px; background: green; }
     </style>
 </head>
 <body>
     <div id="tree"></div>
-    <audio id="english" src="https://freesound.org/data/previews/203/203518_777645-lq.mp3"></audio>
-    <audio id="chinese" src="https://freesound.org/data/previews/66/66953_634166-lq.mp3"></audio>
-    <script>
-        const tree = document.getElementById('tree');
-        const english = document.getElementById('english');
-        const chinese = document.getElementById('chinese');
-        if (tree) {
-            tree.addEventListener('click', () => {
-                tree.classList.toggle('glow');
-                try {
-                    if (Math.random() > 0.5) english.play();
-                    else chinese.play();
-                } catch (e) { console.error('Audio error:', e); }
-            });
-        }
-    </script>
 </body>
 </html>
