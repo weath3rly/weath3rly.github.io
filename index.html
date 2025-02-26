@@ -19,9 +19,14 @@
         tree.addEventListener('click', () => {
             tree.classList.toggle('glow');
             try {
-                if (Math.random() > 0.5) english.play();
-                else chinese.play();
-            } catch (e) { console.error('Audio error:', e); }
+                if (Math.random() > 0.5) {
+                    english.play();
+                } else {
+                    chinese.play();
+                }
+            } catch (e) {
+                console.error('Audio error:', e);
+            }
         });
     </script>
 </body>
