@@ -3,22 +3,16 @@
 <head>
     <title>Joshua Unraveled Lite</title>
     <style>
-        body { background: #D2B48C; margin: 
-0; display: flex; justify-content: center; 
-align-items: center; height: 100vh; }
-        #tree { width: 100px; height: 
-200px; background: green; transition: all 
-0.5s; }
-        #tree.glow { background: blue; }
+        body { background: #D2B48C; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #tree { width: 150px; height: 300px; background: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c') no-repeat center; background-size: cover; filter: brightness(0.7); transition: all 0.5s; }
+        #tree.glow { filter: brightness(1.5) hue-rotate(90deg); }
     </style>
 </head>
 <body>
     <div id="tree"></div>
     <script>
-        const tree = 
-document.getElementById('tree');
-        tree.addEventListener('touchstart', 
-() => {
+        const tree = document.getElementById('tree');
+        tree.addEventListener('touchstart', () => {
             tree.classList.toggle('glow');
         });
     </script>
