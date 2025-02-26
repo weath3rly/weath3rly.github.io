@@ -4,23 +4,38 @@
     <title>Joshua Unraveled Lite</title>
     <style>
         body { background: #D2B48C; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #tree { width: 150px; height: 300px; background: url('https://images.unsplash.com/photo-1509993013289-edd1386a0d0f') no-repeat center; background-size: cover; filter: brightness(0.7); transition: all 0.5s; }
-        #tree.glow { filter: brightness(1.5) hue-rotate(90deg) !important; }
+        #tree { width: 150px; height: 300px; background: url('https://images.unsplash.com/photo-1509993013289-edd1386a0d0f') no-repeat center; background-size: cover; filter: brightness(0.7); transition: filter 0.5s; }
+        #tree.glow { filter: brightness(1.5) hue-rotate(90deg) !important; -webkit-filter: brightness(1.5) hue-rotate(90deg) !important; }
     </style>
 </head>
 <body>
     <div id="tree"></div>
-    <audio id="english" src="https://freesound.org/data/previews/245/245645_4132046-lq.mp3"></audio>
-    <audio id="chinese" src="https://freesound.org/data/previews/66/66952_634166-lq.mp3"></audio>
+    <audio id="english" src="https://freesound.org/data/previews/203/203518_777645-lq.mp3"></audio>
+    <audio id="chinese" src="https://freesound.org/data/previews/66/66953_634166-lq.mp3"></audio>
     <script>
         const tree = document.getElementById('tree');
         const english = document.getElementById('english');
         const chinese = document.getElementById('chinese');
-        tree.addEventListener('click', () => {
-            tree.classList.toggle('glow');
-            if (Math.random() > 0.5) english.play();
-            else chinese.play();
-        });
+        if (tree) {
+            tree.addEventListener('click', () => {
+                console.log('Tree clicked!');
+                tree.classList.toggle('glow');
+                console.log('Glow class:', tree.classList.contains('glow'));
+                try {
+                    if (Math.random() > 0.5) {
+                        console.log('Playing English');
+                        english.play().catch(e => console.error('English error:', e));
+                    } else {
+                        console.log('Playing Chinese');
+                        chinese.play().catch(e => console.error('Chinese error:', e));
+                    }
+                } catch (error) {
+                    console.error('Audio play failed:', error);
+                }
+            });
+        } else {
+            console.error('Tree not found!');
+        }
     </script>
 </body>
 </html>
