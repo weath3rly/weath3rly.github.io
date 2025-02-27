@@ -10,22 +10,20 @@
 </head>
 <body>
     <div id="tree"></div>
-    <audio id="english" src="https://freesound.org/data/previews/245/245645_4132046-lq.mp3"></audio>
-    <audio id="chinese" src="https://freesound.org/data/previews/66/66952_634166-lq.mp3"></audio>
+    <audio id="english" src="https://cdn.pixabay.com/audio/2022/03/15/09-32-18-637_1.mp3"></audio>
+    <audio id="chinese" src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio>
     <script>
         const tree = document.getElementById('tree');
         const english = document.getElementById('english');
         const chinese = document.getElementById('chinese');
         tree.addEventListener('click', () => {
+            const willGlow = !tree.classList.contains('glow');
             tree.classList.toggle('glow');
-            try {
-                if (Math.random() > 0.5) {
-                    english.play();
-                } else {
-                    chinese.play();
-                }
-            } catch (e) {
-                console.error('Audio error:', e);
+            if (willGlow) {
+                try {
+                    if (Math.random() > 0.5) english.play();
+                    else chinese.play();
+                } catch (e) { console.error('Audio error:', e); }
             }
         });
     </script>
