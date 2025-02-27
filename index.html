@@ -12,38 +12,58 @@
             height: 100vh; 
             position: relative; 
             overflow: hidden; 
-            transition: background 1s; /* Smooth day/night */
+            transition: background 1s; 
         }
         body.night { 
             background: linear-gradient(#4A3728, #1C2526); /* Night */
+        }
+        /* Ground texture */
+        body::before { 
+            content: ''; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') no-repeat bottom center; /* Desert sand texture */
+            background-size: cover; 
+            opacity: 0.3; /* Subtle overlay */
+            z-index: 0; 
+            transition: opacity 1s; 
+        }
+        body.night::before { 
+            opacity: 0.1; /* Darker ground at night */
         }
         #tree1, #tree2, #tree3 { 
             width: 150px; 
             height: 300px; 
             background: url('https://i0.wp.com/calmatters.org/wp-content/uploads/2024/04/120423_Joshua-Tree_AP_CM_01.jpg?fit=1200%2C800&ssl=1') no-repeat center; 
             background-size: cover; 
-            filter: brightness(0.7); 
+            filter: brightness(0.7) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); /* Realistic shadow */
             transition: filter 0.5s, transform 0.5s; 
             position: absolute; 
+            z-index: 1; 
         }
         #tree1 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
         #tree2 { top: 60%; left: 30%; transform: translate(-50%, -50%) scale(0.8); }
         #tree3 { top: 40%; left: 70%; transform: translate(-50%, -50%) scale(0.9); }
         #tree1.glow, #tree2.glow, #tree3.glow { 
-            filter: brightness(1.5) hue-rotate(90deg) !important; 
-            -webkit-filter: brightness(1.5) hue-rotate(90deg) !important; 
+            filter: brightness(1.5) hue-rotate(90deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) !important; 
+            -webkit-filter: brightness(1.5) hue-rotate(90deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) !important; 
             transform: translate(-50%, -50%) scale(1.1); 
         }
         body.night #tree1.glow, body.night #tree2.glow, body.night #tree3.glow { 
-            filter: brightness(2.0) hue-rotate(90deg) !important; /* Brighter at night */
-            -webkit-filter: brightness(2.0) hue-rotate(90deg) !important; 
+            filter: brightness(2.0) hue-rotate(90deg) drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) !important; 
+            -webkit-filter: brightness(2.0) hue-rotate(90deg) drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) !important; /* Stronger shadow at night */
         }
         @keyframes glowCycle {
-            0% { filter: brightness(1.5) hue-rotate(90deg); }
-            50% { filter: brightness(1.5) hue-rotate(180deg); }
-            100% { filter: brightness(1.5) hue-rotate(270deg); }
+            0% { filter: brightness(1.5) hue-rotate(90deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); }
+            50% { filter: brightness(1.5) hue-rotate(180deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); }
+            100% { filter: brightness(1.5) hue-rotate(270deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); }
         }
-        .glow { animation: glowCycle 3s infinite; }
+        body.night .glow {
+            animation: glowCycle 3s infinite;
+        }
         .star { 
             position: absolute; 
             width: 2px; 
@@ -51,9 +71,12 @@
             background: white; 
             border-radius: 50%; 
             animation: twinkle 2s infinite; 
-            opacity: 0.5; /* Dim in day */
+            opacity: 0.5; 
         }
-        body.night .star { opacity: 1; } /* Bright at night */
+        body.night .star { opacity: 1; }
+        /* More stars at night */
+        .star:nth-child(5), .star:nth-child(6), .star:nth-child(7) { display: none; }
+        body.night .star:nth-child(5), body.night .star:nth-child(6), body.night .star:nth-child(7) { display: block; }
         @keyframes twinkle {
             0% { opacity: 1; }
             50% { opacity: 0.3; }
@@ -70,6 +93,16 @@
             cursor: pointer; 
             font-family: Arial, sans-serif; 
         }
+        /* Desert elements - rocks */
+        .rock { 
+            position: absolute; 
+            width: 50px; 
+            height: 50px; 
+            background: url('https://images.unsplash.com/photo-1596156876162-1a7a90c0e9e7') no-repeat center; /* Placeholder rock */
+            background-size: cover; 
+            filter: brightness(0.6); 
+            z-index: 0; 
+        }
     </style>
 </head>
 <body>
@@ -81,6 +114,11 @@
     <div class="star" style="top: 15%; left: 70%;"></div>
     <div class="star" style="top: 5%; left: 50%;"></div>
     <div class="star" style="top: 20%; left: 90%;"></div>
+    <div class="star" style="top: 8%; left: 30%;"></div>
+    <div class="star" style="top: 12%; left: 60%;"></div>
+    <div class="star" style="top: 18%; left: 40%;"></div>
+    <div class="rock" style="bottom: 10%; left: 20%;"></div>
+    <div class="rock" style="bottom: 15%; left: 80%;"></div>
     <audio id="english" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/09-32-18-637_1.mp3"></audio>
     <audio id="chinese" preload="auto" src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio>
     <script>
