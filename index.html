@@ -4,7 +4,7 @@
     <title>Joshua Unraveled Lite</title>
     <style>
         body { 
-            background: linear-gradient(#D2B48C, #87CEEB); /* Desert to sky */
+            background: linear-gradient(#D2B48C, #87CEEB); 
             margin: 0; 
             display: flex; 
             justify-content: center; 
@@ -14,49 +14,49 @@
         #tree { 
             width: 150px; 
             height: 300px; 
-            background: url('https://images.unsplash.com/photo-1509993013289-edd1386a0d0f') no-repeat center; /* Joshua tree */
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Joshua_Tree_%28Yucca_brevifolia%29.jpg/640px-Joshua_Tree_%28Yucca_brevifolia%29.jpg') no-repeat center; /* New URL */
             background-size: cover; 
-            filter: brightness(0.7); /* Dim default */
-            transition: filter 0.5s, transform 0.5s; /* Smooth glow */
+            filter: brightness(0.7); 
+            transition: filter 0.5s, transform 0.5s; 
         }
         #tree.glow { 
-            filter: brightness(1.5) hue-rotate(90deg) !important; /* Blue glow */
-            -webkit-filter: brightness(1.5) hue-rotate(90deg) !important; /* Browser fix */
-            transform: scale(1.1); /* Pulse */
+            filter: brightness(1.5) hue-rotate(90deg) !important; 
+            -webkit-filter: brightness(1.5) hue-rotate(90deg) !important; 
+            transform: scale(1.1); 
         }
     </style>
 </head>
 <body>
     <div id="tree"></div>
-    <audio id="english" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/09-32-18-637_1.mp3"></audio><!-- Soft English whisper -->
-    <audio id="chinese" preload="auto" src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio><!-- Mock Chinese whisper -->
+    <audio id="english" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/09-32-18-637_1.mp3"></audio>
+    <audio id="chinese" preload="auto" src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio>
     <script>
         const tree = document.getElementById('tree');
         const english = document.getElementById('english');
         const chinese = document.getElementById('chinese');
 
-        // Preload audio to dodge browser lag
+        // Preload audio
         english.load();
         chinese.load();
 
-        // Unlock audio on first click anywhere
+        // Unlock audio on first click
         document.body.addEventListener('click', () => {
-            english.muted = true; // Silent unlock
+            english.muted = true;
             english.play().then(() => english.pause()).catch(e => console.error('Unlock error:', e));
             chinese.muted = true;
             chinese.play().then(() => chinese.pause()).catch(e => console.error('Unlock error:', e));
-            english.muted = false; // Ready for real play
+            english.muted = false;
             chinese.muted = false;
-        }, { once: true }); // One-time unlock
+        }, { once: true });
 
         // Tree click - glow & whisper
         tree.addEventListener('click', () => {
             const willGlow = !tree.classList.contains('glow');
             tree.classList.toggle('glow');
-            if (willGlow) { // Whisper on green-to-blue
+            if (willGlow) {
                 try {
                     const whisper = Math.random() > 0.5 ? english : chinese;
-                    whisper.currentTime = 0; // Reset to start
+                    whisper.currentTime = 0;
                     whisper.play().catch(e => console.error('Play error:', e));
                 } catch (e) {
                     console.error('Audio error:', e);
