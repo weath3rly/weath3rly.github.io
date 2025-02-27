@@ -4,7 +4,7 @@
     <title>Joshua Unraveled Lite</title>
     <style>
         body { 
-            background: linear-gradient(#D2B48C, #87CEEB); 
+            background: linear-gradient(#D2B48C, #87CEEB); /* Day */
             margin: 0; 
             display: flex; 
             justify-content: center; 
@@ -12,6 +12,10 @@
             height: 100vh; 
             position: relative; 
             overflow: hidden; 
+            transition: background 1s; /* Smooth day/night */
+        }
+        body.night { 
+            background: linear-gradient(#4A3728, #1C2526); /* Night */
         }
         #tree1, #tree2, #tree3 { 
             width: 150px; 
@@ -25,23 +29,19 @@
         #tree1 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
         #tree2 { top: 60%; left: 30%; transform: translate(-50%, -50%) scale(0.8); }
         #tree3 { top: 40%; left: 70%; transform: translate(-50%, -50%) scale(0.9); }
-        #tree1:hover, #tree2:hover, #tree3:hover { 
-            animation: sway 2s infinite; /* Sway on hover */
-        }
         #tree1.glow, #tree2.glow, #tree3.glow { 
             filter: brightness(1.5) hue-rotate(90deg) !important; 
             -webkit-filter: brightness(1.5) hue-rotate(90deg) !important; 
             transform: translate(-50%, -50%) scale(1.1); 
         }
+        body.night #tree1.glow, body.night #tree2.glow, body.night #tree3.glow { 
+            filter: brightness(2.0) hue-rotate(90deg) !important; /* Brighter at night */
+            -webkit-filter: brightness(2.0) hue-rotate(90deg) !important; 
+        }
         @keyframes glowCycle {
             0% { filter: brightness(1.5) hue-rotate(90deg); }
             50% { filter: brightness(1.5) hue-rotate(180deg); }
             100% { filter: brightness(1.5) hue-rotate(270deg); }
-        }
-        @keyframes sway {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            50% { transform: translate(-50%, -50%) rotate(5deg); }
-            100% { transform: translate(-50%, -50%) rotate(0deg); }
         }
         .glow { animation: glowCycle 3s infinite; }
         .star { 
@@ -51,15 +51,29 @@
             background: white; 
             border-radius: 50%; 
             animation: twinkle 2s infinite; 
+            opacity: 0.5; /* Dim in day */
         }
+        body.night .star { opacity: 1; } /* Bright at night */
         @keyframes twinkle {
             0% { opacity: 1; }
             50% { opacity: 0.3; }
             100% { opacity: 1; }
         }
+        #toggle { 
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            padding: 10px; 
+            background: #4A3728; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-family: Arial, sans-serif; 
+        }
     </style>
 </head>
 <body>
+    <button id="toggle">Toggle Day/Night</button>
     <div id="tree1"></div>
     <div id="tree2"></div>
     <div id="tree3"></div>
@@ -67,33 +81,34 @@
     <div class="star" style="top: 15%; left: 70%;"></div>
     <div class="star" style="top: 5%; left: 50%;"></div>
     <div class="star" style="top: 20%; left: 90%;"></div>
-    <audio id="wind" preload="auto" loop src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio>
     <audio id="english" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/09-32-18-637_1.mp3"></audio>
     <audio id="chinese" preload="auto" src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio>
     <script>
+        const toggle = document.getElementById('toggle');
+        const body = document.body;
         const trees = [document.getElementById('tree1'), document.getElementById('tree2'), document.getElementById('tree3')];
-        const wind = document.getElementById('wind');
         const english = document.getElementById('english');
         const chinese = document.getElementById('chinese');
 
         // Preload audio
-        wind.load();
         english.load();
         chinese.load();
 
         // Unlock audio on first click
         document.body.addEventListener('click', () => {
-            wind.muted = true;
-            wind.play().then(() => wind.pause()).catch(e => console.error('Wind unlock error:', e));
             english.muted = true;
-            english.play().then(() => english.pause()).catch(e => console.error('English unlock error:', e));
+            english.play().then(() => english.pause()).catch(e => console.error('Unlock error:', e));
             chinese.muted = true;
-            chinese.play().then(() => chinese.pause()).catch(e => console.error('Chinese unlock error:', e));
-            wind.muted = false;
+            chinese.play().then(() => chinese.pause()).catch(e => console.error('Unlock error:', e));
             english.muted = false;
             chinese.muted = false;
-            wind.play(); // Start wind loop
         }, { once: true });
+
+        // Day/Night toggle
+        toggle.addEventListener('click', () => {
+            body.classList.toggle('night');
+            toggle.textContent = body.classList.contains('night') ? 'Day Mode' : 'Night Mode';
+        });
 
         // Tree clicks
         trees.forEach(tree => {
