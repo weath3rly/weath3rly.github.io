@@ -4,34 +4,68 @@
     <title>Joshua Unraveled Lite</title>
     <style>
         body { 
-            background: linear-gradient(#D2B48C, #87CEEB); 
+            background: linear-gradient(#D2B48C, #87CEEB); /* Desert to sky */
             margin: 0; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             height: 100vh; 
+            position: relative; /* For stars */
+            overflow: hidden; /* Clean edges */
         }
-        #tree { 
+        #tree1, #tree2, #tree3 { 
             width: 150px; 
             height: 300px; 
-            background: url('https://i0.wp.com/calmatters.org/wp-content/uploads/2024/04/120423_Joshua-Tree_AP_CM_01.jpg?fit=1200%2C800&ssl=1') no-repeat center; /* New Unsplash tree */
+            background: url('https://i0.wp.com/calmatters.org/wp-content/uploads/2024/04/120423_Joshua-Tree_AP_CM_01.jpg?fit=1200%2C800&ssl=1') no-repeat center; /* Your new URL */
             background-size: cover; 
             filter: brightness(0.7); 
             transition: filter 0.5s, transform 0.5s; 
+            position: absolute; /* Position trees */
         }
-        #tree.glow { 
+        #tree1 { top: 50%; left: 50%; transform: translate(-50%, -50%); } /* Center */
+        #tree2 { top: 60%; left: 30%; transform: translate(-50%, -50%) scale(0.8); } /* Left, smaller */
+        #tree3 { top: 40%; left: 70%; transform: translate(-50%, -50%) scale(0.9); } /* Right, medium */
+        #tree1.glow, #tree2.glow, #tree3.glow { 
             filter: brightness(1.5) hue-rotate(90deg) !important; 
             -webkit-filter: brightness(1.5) hue-rotate(90deg) !important; 
-            transform: scale(1.1); 
+            transform: translate(-50%, -50%) scale(1.1); /* Adjust for position */
+        }
+        /* Glow animation - cycle colors */
+        @keyframes glowCycle {
+            0% { filter: brightness(1.5) hue-rotate(90deg); } /* Blue */
+            50% { filter: brightness(1.5) hue-rotate(180deg); } /* Purple */
+            100% { filter: brightness(1.5) hue-rotate(270deg); } /* Green */
+        }
+        .glow { animation: glowCycle 3s infinite; }
+        /* Stars */
+        .star { 
+            position: absolute; 
+            width: 2px; 
+            height: 2px; 
+            background: white; 
+            border-radius: 50%; 
+            animation: twinkle 2s infinite; 
+        }
+        @keyframes twinkle {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div id="tree"></div>
+    <div id="tree1"></div>
+    <div id="tree2"></div>
+    <div id="tree3"></div>
+    <!-- Stars -->
+    <div class="star" style="top: 10%; left: 20%;"></div>
+    <div class="star" style="top: 15%; left: 70%;"></div>
+    <div class="star" style="top: 5%; left: 50%;"></div>
+    <div class="star" style="top: 20%; left: 90%;"></div>
     <audio id="english" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/09-32-18-637_1.mp3"></audio>
     <audio id="chinese" preload="auto" src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio>
     <script>
-        const tree = document.getElementById('tree');
+        const trees = [document.getElementById('tree1'), document.getElementById('tree2'), document.getElementById('tree3')];
         const english = document.getElementById('english');
         const chinese = document.getElementById('chinese');
 
@@ -49,19 +83,21 @@
             chinese.muted = false;
         }, { once: true });
 
-        // Tree click - glow & whisper
-        tree.addEventListener('click', () => {
-            const willGlow = !tree.classList.contains('glow');
-            tree.classList.toggle('glow');
-            if (willGlow) {
-                try {
-                    const whisper = Math.random() > 0.5 ? english : chinese;
-                    whisper.currentTime = 0;
-                    whisper.play().catch(e => console.error('Play error:', e));
-                } catch (e) {
-                    console.error('Audio error:', e);
+        // Tree clicks
+        trees.forEach(tree => {
+            tree.addEventListener('click', () => {
+                const willGlow = !tree.classList.contains('glow');
+                tree.classList.toggle('glow');
+                if (willGlow) {
+                    try {
+                        const whisper = Math.random() > 0.5 ? english : chinese;
+                        whisper.currentTime = 0;
+                        whisper.play().catch(e => console.error('Play error:', e));
+                    } catch (e) {
+                        console.error('Audio error:', e);
+                    }
                 }
-            }
+            });
         });
     </script>
 </body>
