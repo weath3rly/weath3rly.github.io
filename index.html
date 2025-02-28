@@ -1,42 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Joshua Tree Meets Avatar</title>
-  <style>
-    /* Set the size of the map */
-    #map {
-      height: 100%;
-      width: 100%;
-    }
-    /* Ensure the body and html elements occupy full height */
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-  </style>
-  <!-- Load the Google Maps JavaScript API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
-  <script>
-    // Initialize and add the map
-    function initMap() {
-      // The location of the center point (e.g., Joshua Tree National Park)
-      const center = { lat: 33.8730, lng: -115.9000 };
-      // The map, centered at the specified location
-      const map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 10,
-        center: center,
-        mapTypeId: 'satellite' // Use 'satellite' for imagery similar to Google Earth
-      });
-      // The KML layer
-      const kmlLayer = new google.maps.KmlLayer({
-        url: 'URL_TO_YOUR_KML_FILE', // Replace with the URL to your KML file
-        map: map
-      });
-    }
-  </script>
-</head>
-<body>
-  <!-- The div element to hold the map -->
-  <div id="map"></div>
-</body>
-</html>
+    <title>Joshua Unraveled Lite</title>
+    <style>
+        body { 
+            background: linear-gradient(#D2B48C, #87CEEB); /* Day */
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            position: relative; 
+            overflow: hidden; 
+            transition: background 1s; 
+        }
+        body.night { 
+            background: linear-gradient(#4A3728, #1C2526); /* Night */
+        }
+        /* Ground - CGI desert */
+        #desert { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: linear-gradient(to bottom, transparent 50%, #C19A6B 70%, #8B5A2B); /* Base sand */
+            z-index: 0; 
+            transition: filter 0.5s; 
+            filter: brightness(0.7); 
+        }
+        #desert::before { 
+            content: ''; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: radial-gradient(ellipse at 70% 70%, #D4A76A 20%, transparent 50%), 
+                        radial-gradient(ellipse at 30% 80%, #C19A6B 15%, transparent 50%), 
+                        linear-gradient(to bottom, rgba(193, 154, 107, 0.2) 0%, transparent 50%); 
+            z-index: 1; 
+        }
+        #desert.glow { 
+            filter: brightness(1.5); 
