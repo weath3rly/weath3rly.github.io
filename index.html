@@ -4,7 +4,7 @@
     <title>Joshua Unraveled Lite</title>
     <style>
         body { 
-            background: linear-gradient(#D2B48C, #87CEEB); /* Day */
+            background: linear-gradient(#D2B48C, #87CEEB); /* Day sky */
             margin: 0; 
             display: flex; 
             justify-content: center; 
@@ -15,31 +15,20 @@
             transition: background 1s; 
         }
         body.night { 
-            background: linear-gradient(#4A3728, #1C2526); /* Night */
+            background: linear-gradient(#4A3728, #1C2526); /* Night sky */
         }
-        /* Ground - CGI desert */
+        /* Ground - Hyper-real Mojave Desert */
         #desert { 
             position: absolute; 
             top: 0; 
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: linear-gradient(to bottom, transparent 50%, #C19A6B 70%, #8B5A2B); /* Base sand */
-            z-index: 0; 
-            transition: filter 0.5s; 
+            background: url('https://media.istockphoto.com/id/511885047/photo/joshua-tree-national-park.jpg?s=612x612&w=0&k=20&c=zIELnrQDlF1OF95x8zVOEF_yg0tUpjRY63TjAUeQtV8=') no-repeat bottom center; /* Mojave ground */
+            background-size: cover; 
             filter: brightness(0.7); 
-        }
-        #desert::before { 
-            content: ''; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: radial-gradient(ellipse at 70% 70%, #D4A76A 20%, transparent 50%), 
-                        radial-gradient(ellipse at 30% 80%, #C19A6B 15%, transparent 50%), 
-                        linear-gradient(to bottom, rgba(193, 154, 107, 0.2) 0%, transparent 50%); 
-            z-index: 1; 
+            transition: filter 0.5s; 
+            z-index: 0; 
         }
         #desert.glow { 
             filter: brightness(1.5); 
@@ -57,89 +46,82 @@
         body.night .glow {
             animation: glowCycle 3s infinite;
         }
-        /* Hyper-realistic Joshua trees - Google Earth style */
+        /* Hyper-realistic Joshua trees - Google Street View style */
         .tree { 
             position: absolute; 
             z-index: 2; 
+            width: 150px; 
+            height: 300px; 
+            background: url('https://i0.wp.com/calmatters.org/wp-content/uploads/2024/04/120423_Joshua-Tree_AP_CM_01.jpg?fit=1200%2C800&ssl=1') no-repeat center; /* Your realistic tree */
+            background-size: contain; 
+            filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); /* Realistic shadow */
+            transition: filter 0.5s; 
         }
-        .tree::before { 
-            content: ''; 
-            position: absolute; 
-            width: 20px; 
-            height: 120px; 
-            background: linear-gradient(to bottom, #4A3728, #6B4423); /* Realistic trunk */
-            border-radius: 5px; 
-            box-shadow: inset 5px 0 5px rgba(0, 0, 0, 0.3), /* Trunk texture */
-                        inset -5px 0 5px rgba(255, 255, 255, 0.1); /* Light highlight */
+        .tree.glow { 
+            filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(90deg); /* Glow */
+            -webkit-filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(90deg); 
         }
-        .tree::after { 
-            content: ''; 
-            position: absolute; 
-            top: -60px; 
-            left: -40px; 
-            width: 100px; 
-            height: 100px; 
-            background: radial-gradient(circle at 40% 40%, #6B8E23 20%, #556B2F 50%, #3D5A1F 70%, transparent 80%); /* Detailed foliage */
-            border-radius: 50%; 
-            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5); /* Realistic shadow */
-            clip-path: polygon(0% 0%, 20% 10%, 30% 0%, 40% 20%, 50% 0%, 60% 20%, 70% 0%, 80% 10%, 100% 0%, 90% 30%, 100% 50%, 90% 70%, 100% 90%, 80% 80%, 70% 100%, 60% 80%, 50% 100%, 40% 80%, 30% 100%, 20% 80%, 10% 100%, 0% 80%, 10% 50%, 0% 30%); /* Spiky foliage shape */
+        body.night .tree.glow { 
+            filter: drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) brightness(2.0) hue-rotate(90deg); 
+            -webkit-filter: drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) brightness(2.0) hue-rotate(90deg); 
         }
-        .tree.glow::before { 
-            box-shadow: inset 5px 0 5px rgba(0, 0, 0, 0.3), 
-                        inset -5px 0 5px rgba(255, 255, 255, 0.1), 
-                        0 0 20px rgba(0, 255, 255, 0.5); 
+        @keyframes treeGlowCycle {
+            0% { filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(90deg); }
+            50% { filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(180deg); }
+            100% { filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(270deg); }
         }
-        .tree.glow::after { 
-            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), 
-                        0 0 30px rgba(0, 255, 255, 0.7); 
+        body.night .tree.glow {
+            animation: treeGlowCycle 3s infinite;
         }
-        body.night .tree.glow::before { 
-            box-shadow: inset 5px 0 5px rgba(0, 0, 0, 0.3), 
-                        inset -5px 0 5px rgba(255, 255, 255, 0.1), 
-                        0 0 30px rgba(0, 255, 255, 0.7); 
-        }
-        body.night .tree.glow::after { 
-            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.8), 
-                        0 0 40px rgba(0, 255, 255, 0.9); 
-        }
-        /* Hyper-realistic desert shrubs - Google Earth style */
+        /* Hyper-realistic desert shrubs - Google Street View style */
         .shrub { 
             position: absolute; 
             z-index: 2; 
+            width: 80px; 
+            height: 60px; 
+            background: url('https://images.unsplash.com/photo-1596156876162-1a7a90c0e9e7') no-repeat center; /* Realistic shrub placeholder */
+            background-size: contain; 
+            filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)); 
+            transition: filter 0.5s; 
         }
-        .shrub::before { 
-            content: ''; 
+        .shrub.glow { 
+            filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)) brightness(1.5) hue-rotate(90deg); 
+            -webkit-filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)) brightness(1.5) hue-rotate(90deg); 
+        }
+        body.night .shrub.glow { 
+            filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)) brightness(2.0) hue-rotate(90deg); 
+            -webkit-filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)) brightness(2.0) hue-rotate(90deg); 
+        }
+        body.night .shrub.glow {
+            animation: treeGlowCycle 3s infinite;
+        }
+        /* Hyper-realistic rocks - Google Street View style */
+        .rock { 
             position: absolute; 
+            z-index: 1; 
             width: 60px; 
             height: 40px; 
-            background: radial-gradient(circle at 50% 50%, #6B8E23 20%, #556B2F 40%, #3D5A1F 60%, transparent 80%); /* Shrub foliage */
-            border-radius: 50%; 
-            clip-path: polygon(0% 0%, 20% 10%, 30% 0%, 40% 20%, 50% 0%, 60% 20%, 70% 0%, 80% 10%, 100% 0%, 90% 30%, 100% 50%, 80% 40%, 70% 60%, 60% 40%, 50% 60%, 40% 40%, 30% 60%, 20% 40%, 10% 60%, 0% 40%); /* Irregular shape */
-            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4); /* Shadow */
+            background: url('https://images.unsplash.com/photo-1596156876162-1a7a90c0e9e7') no-repeat center; /* Realistic rock placeholder */
+            background-size: contain; 
+            filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)); 
         }
-        .shrub.glow::before { 
-            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4), 
-                        0 0 20px rgba(0, 255, 255, 0.5); 
-        }
-        body.night .shrub.glow::before { 
-            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4), 
-                        0 0 30px rgba(0, 255, 255, 0.7); 
-        }
-        /* Sun/Moon - CGI lighting */
+        /* Sun/Moon - Realistic lighting */
         .sun-moon { 
             position: absolute; 
             top: 10%; 
             left: 50%; 
             width: 50px; 
             height: 50px; 
-            background: radial-gradient(circle, #FFD700 20%, transparent 70%); 
+            background: url('https://images.unsplash.com/photo-1604537529428-15bcbeecfe4d') no-repeat center; /* Sun texture */
+            background-size: cover; 
             border-radius: 50%; 
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); 
             transition: background 1s, box-shadow 1s; 
             z-index: 1; 
         }
         body.night .sun-moon { 
-            background: radial-gradient(circle, #C0C0C0 20%, transparent 70%); 
+            background: url('https://images.unsplash.com/photo-1604537529428-15bcbeecfe4d') no-repeat center; /* Moon texture */
+            background-size: cover; 
             box-shadow: 0 0 30px rgba(192, 192, 192, 0.5); 
         }
         .star { 
@@ -183,6 +165,8 @@
     <div class="shrub" style="bottom: 5%; left: 30%;"></div>
     <div class="shrub" style="bottom: 10%; left: 70%; transform: scale(0.7);"></div>
     <div class="shrub" style="bottom: 20%; left: 40%; transform: scale(0.9);"></div>
+    <div class="rock" style="bottom: 5%; left: 25%;"></div>
+    <div class="rock" style="bottom: 10%; left: 75%; transform: scale(0.8);"></div>
     <div class="star" style="top: 10%; left: 20%;"></div>
     <div class="star" style="top: 15%; left: 70%;"></div>
     <div class="star" style="top: 5%; left: 50%;"></div>
