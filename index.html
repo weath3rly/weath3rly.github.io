@@ -18,41 +18,23 @@
             background: linear-gradient(#4A3728, #1C2526); /* Night */
         }
         /* Ground texture - Mojave Desert */
-        body::before { 
-            content: ''; 
+        #desert { 
             position: absolute; 
             top: 0; 
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: url('https://media.istockphoto.com/id/511885047/photo/joshua-tree-national-park.jpg?s=612x612&w=0&k=20&c=zIELnrQDlF1OF95x8zVOEF_yg0tUpjRY63TjAUeQtV8=') no-repeat bottom center; /* New Mojave Desert ground */
+            background: url('https://media.istockphoto.com/id/511885047/photo/joshua-tree-national-park.jpg?s=612x612&w=0&k=20&c=zIELnrQDlF1OF95x8zVOEF_yg0tUpjRY63TjAUeQtV8=') no-repeat bottom center; /* Mojave Desert */
             background-size: cover; 
-            opacity: 0.3; /* Subtle overlay */
+            filter: brightness(0.7) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); /* Default */
+            transition: filter 0.5s; 
             z-index: 0; 
-            transition: opacity 1s; 
         }
-        body.night::before { 
-            opacity: 0.1; /* Darker ground at night */
-        }
-        #tree1, #tree2, #tree3 { 
-            width: 150px; 
-            height: 300px; 
-            background: url('https://i0.wp.com/calmatters.org/wp-content/uploads/2024/04/120423_Joshua-Tree_AP_CM_01.jpg?fit=1200%2C800&ssl=1') no-repeat center; 
-            background-size: cover; 
-            filter: brightness(0.7) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); 
-            transition: filter 0.5s, transform 0.5s; 
-            position: absolute; 
-            z-index: 1; 
-        }
-        #tree1 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        #tree2 { top: 60%; left: 30%; transform: translate(-50%, -50%) scale(0.8); }
-        #tree3 { top: 40%; left: 70%; transform: translate(-50%, -50%) scale(0.9); }
-        #tree1.glow, #tree2.glow, #tree3.glow { 
-            filter: brightness(1.5) hue-rotate(90deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) !important; 
+        #desert.glow { 
+            filter: brightness(1.5) hue-rotate(90deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) !important; /* Glow */
             -webkit-filter: brightness(1.5) hue-rotate(90deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) !important; 
-            transform: translate(-50%, -50%) scale(1.1); 
         }
-        body.night #tree1.glow, body.night #tree2.glow, body.night #tree3.glow { 
+        body.night #desert.glow { 
             filter: brightness(2.0) hue-rotate(90deg) drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) !important; 
             -webkit-filter: brightness(2.0) hue-rotate(90deg) drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) !important; 
         }
@@ -74,8 +56,8 @@
             opacity: 0.5; 
         }
         body.night .star { opacity: 1; }
-        .star:nth-child(5), .star:nth-child(6), .star:nth-child(7) { display: none; }
-        body.night .star:nth-child(5), body.night .star:nth-child(6), body.night .star:nth-child(7) { display: block; }
+        .star:nth-child(3), .star:nth-child(4), .star:nth-child(5) { display: none; }
+        body.night .star:nth-child(3), body.night .star:nth-child(4), body.night .star:nth-child(5) { display: block; }
         @keyframes twinkle {
             0% { opacity: 1; }
             50% { opacity: 0.3; }
@@ -91,23 +73,13 @@
             border: none; 
             cursor: pointer; 
             font-family: Arial, sans-serif; 
-        }
-        .rock { 
-            position: absolute; 
-            width: 50px; 
-            height: 50px; 
-            background: url('https://images.unsplash.com/photo-1596156876162-1a7a90c0e9e7') no-repeat center; 
-            background-size: cover; 
-            filter: brightness(0.6); 
-            z-index: 0; 
+            z-index: 2; 
         }
     </style>
 </head>
 <body>
     <button id="toggle">Toggle Day/Night</button>
-    <div id="tree1"></div>
-    <div id="tree2"></div>
-    <div id="tree3"></div>
+    <div id="desert"></div>
     <div class="star" style="top: 10%; left: 20%;"></div>
     <div class="star" style="top: 15%; left: 70%;"></div>
     <div class="star" style="top: 5%; left: 50%;"></div>
@@ -115,14 +87,12 @@
     <div class="star" style="top: 8%; left: 30%;"></div>
     <div class="star" style="top: 12%; left: 60%;"></div>
     <div class="star" style="top: 18%; left: 40%;"></div>
-    <div class="rock" style="bottom: 10%; left: 20%;"></div>
-    <div class="rock" style="bottom: 15%; left: 80%;"></div>
     <audio id="english" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/09-32-18-637_1.mp3"></audio>
     <audio id="chinese" preload="auto" src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio>
     <script>
         const toggle = document.getElementById('toggle');
         const body = document.body;
-        const trees = [document.getElementById('tree1'), document.getElementById('tree2'), document.getElementById('tree3')];
+        const desert = document.getElementById('desert');
         const english = document.getElementById('english');
         const chinese = document.getElementById('chinese');
 
@@ -146,21 +116,19 @@
             toggle.textContent = body.classList.contains('night') ? 'Day Mode' : 'Night Mode';
         });
 
-        // Tree clicks
-        trees.forEach(tree => {
-            tree.addEventListener('click', () => {
-                const willGlow = !tree.classList.contains('glow');
-                tree.classList.toggle('glow');
-                if (willGlow) {
-                    try {
-                        const whisper = Math.random() > 0.5 ? english : chinese;
-                        whisper.currentTime = 0;
-                        whisper.play().catch(e => console.error('Play error:', e));
-                    } catch (e) {
-                        console.error('Audio error:', e);
-                    }
+        // Desert click - glow
+        desert.addEventListener('click', () => {
+            const willGlow = !desert.classList.contains('glow');
+            desert.classList.toggle('glow');
+            if (willGlow) {
+                try {
+                    const whisper = Math.random() > 0.5 ? english : chinese;
+                    whisper.currentTime = 0;
+                    whisper.play().catch(e => console.error('Play error:', e));
+                } catch (e) {
+                    console.error('Audio error:', e);
                 }
-            });
+            }
         });
     </script>
 </body>
