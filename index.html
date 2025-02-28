@@ -1,226 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Joshua Unraveled Lite</title>
-    <style>
-        body { 
-            background: linear-gradient(#D2B48C, #87CEEB); /* Day sky */
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            position: relative; 
-            overflow: hidden; 
-            transition: background 1s; 
-        }
-        body.night { 
-            background: linear-gradient(#4A3728, #1C2526); /* Night sky */
-        }
-        /* Ground - Hyper-real Mojave Desert */
-        #desert { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: url('https://media.istockphoto.com/id/511885047/photo/joshua-tree-national-park.jpg?s=612x612&w=0&k=20&c=zIELnrQDlF1OF95x8zVOEF_yg0tUpjRY63TjAUeQtV8=') no-repeat bottom center; /* Mojave ground */
-            background-size: cover; 
-            filter: brightness(0.7); 
-            transition: filter 0.5s; 
-            z-index: 0; 
-        }
-        #desert.glow { 
-            filter: brightness(1.5); 
-            box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.5), 0 0 30px rgba(0, 255, 255, 0.3); 
-        }
-        body.night #desert.glow { 
-            filter: brightness(2.0); 
-            box-shadow: inset 0 0 70px rgba(0, 255, 255, 0.7), 0 0 50px rgba(0, 255, 255, 0.5); 
-        }
-        @keyframes glowCycle {
-            0% { box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.5), 0 0 30px rgba(0, 255, 255, 0.3); }
-            50% { box-shadow: inset 0 0 50px rgba(147, 112, 219, 0.5), 0 0 30px rgba(147, 112, 219, 0.3); }
-            100% { box-shadow: inset 0 0 50px rgba(50, 205, 50, 0.5), 0 0 30px rgba(50, 205, 50, 0.3); }
-        }
-        body.night .glow {
-            animation: glowCycle 3s infinite;
-        }
-        /* Hyper-realistic Joshua trees - Google Street View style */
-        .tree { 
-            position: absolute; 
-            z-index: 2; 
-            width: 150px; 
-            height: 300px; 
-            background: url('https://i0.wp.com/calmatters.org/wp-content/uploads/2024/04/120423_Joshua-Tree_AP_CM_01.jpg?fit=1200%2C800&ssl=1') no-repeat center; /* Your realistic tree */
-            background-size: contain; 
-            filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); /* Realistic shadow */
-            transition: filter 0.5s; 
-        }
-        .tree.glow { 
-            filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(90deg); /* Glow */
-            -webkit-filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(90deg); 
-        }
-        body.night .tree.glow { 
-            filter: drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) brightness(2.0) hue-rotate(90deg); 
-            -webkit-filter: drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) brightness(2.0) hue-rotate(90deg); 
-        }
-        @keyframes treeGlowCycle {
-            0% { filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(90deg); }
-            50% { filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(180deg); }
-            100% { filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) brightness(1.5) hue-rotate(270deg); }
-        }
-        body.night .tree.glow {
-            animation: treeGlowCycle 3s infinite;
-        }
-        /* Hyper-realistic desert shrubs - Google Street View style */
-        .shrub { 
-            position: absolute; 
-            z-index: 2; 
-            width: 80px; 
-            height: 60px; 
-            background: url('https://images.unsplash.com/photo-1596156876162-1a7a90c0e9e7') no-repeat center; /* Realistic shrub placeholder */
-            background-size: contain; 
-            filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)); 
-            transition: filter 0.5s; 
-        }
-        .shrub.glow { 
-            filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)) brightness(1.5) hue-rotate(90deg); 
-            -webkit-filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)) brightness(1.5) hue-rotate(90deg); 
-        }
-        body.night .shrub.glow { 
-            filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)) brightness(2.0) hue-rotate(90deg); 
-            -webkit-filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)) brightness(2.0) hue-rotate(90deg); 
-        }
-        body.night .shrub.glow {
-            animation: treeGlowCycle 3s infinite;
-        }
-        /* Hyper-realistic rocks - Google Street View style */
-        .rock { 
-            position: absolute; 
-            z-index: 1; 
-            width: 60px; 
-            height: 40px; 
-            background: url('https://images.unsplash.com/photo-1596156876162-1a7a90c0e9e7') no-repeat center; /* Realistic rock placeholder */
-            background-size: contain; 
-            filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4)); 
-        }
-        /* Sun/Moon - Realistic lighting */
-        .sun-moon { 
-            position: absolute; 
-            top: 10%; 
-            left: 50%; 
-            width: 50px; 
-            height: 50px; 
-            background: url('https://images.unsplash.com/photo-1604537529428-15bcbeecfe4d') no-repeat center; /* Sun texture */
-            background-size: cover; 
-            border-radius: 50%; 
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); 
-            transition: background 1s, box-shadow 1s; 
-            z-index: 1; 
-        }
-        body.night .sun-moon { 
-            background: url('https://images.unsplash.com/photo-1604537529428-15bcbeecfe4d') no-repeat center; /* Moon texture */
-            background-size: cover; 
-            box-shadow: 0 0 30px rgba(192, 192, 192, 0.5); 
-        }
-        .star { 
-            position: absolute; 
-            width: 2px; 
-            height: 2px; 
-            background: white; 
-            border-radius: 50%; 
-            animation: twinkle 2s infinite; 
-            opacity: 0.5; 
-        }
-        body.night .star { opacity: 1; }
-        .star:nth-child(5), .star:nth-child(6), .star:nth-child(7) { display: none; }
-        body.night .star:nth-child(5), body.night .star:nth-child(6), body.night .star:nth-child(7) { display: block; }
-        @keyframes twinkle {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-        #toggle { 
-            position: absolute; 
-            top: 10px; 
-            right: 10px; 
-            padding: 10px; 
-            background: #4A3728; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            font-family: Arial, sans-serif; 
-            z-index: 2; 
-        }
-    </style>
+  <title>Joshua Tree Meets Avatar</title>
+  <style>
+    /* Set the size of the map */
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    /* Ensure the body and html elements occupy full height */
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+  </style>
+  <!-- Load the Google Maps JavaScript API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+  <script>
+    // Initialize and add the map
+    function initMap() {
+      // The location of the center point (e.g., Joshua Tree National Park)
+      const center = { lat: 33.8730, lng: -115.9000 };
+      // The map, centered at the specified location
+      const map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 10,
+        center: center,
+        mapTypeId: 'satellite' // Use 'satellite' for imagery similar to Google Earth
+      });
+      // The KML layer
+      const kmlLayer = new google.maps.KmlLayer({
+        url: 'URL_TO_YOUR_KML_FILE', // Replace with the URL to your KML file
+        map: map
+      });
+    }
+  </script>
 </head>
 <body>
-    <button id="toggle">Toggle Day/Night</button>
-    <div id="desert"></div>
-    <div class="sun-moon"></div>
-    <div class="tree" style="bottom: 10%; left: 20%;"></div>
-    <div class="tree" style="bottom: 15%; left: 80%; transform: scale(0.8);"></div>
-    <div class="tree" style="bottom: 5%; left: 50%; transform: scale(1.2);"></div>
-    <div class="shrub" style="bottom: 5%; left: 30%;"></div>
-    <div class="shrub" style="bottom: 10%; left: 70%; transform: scale(0.7);"></div>
-    <div class="shrub" style="bottom: 20%; left: 40%; transform: scale(0.9);"></div>
-    <div class="rock" style="bottom: 5%; left: 25%;"></div>
-    <div class="rock" style="bottom: 10%; left: 75%; transform: scale(0.8);"></div>
-    <div class="star" style="top: 10%; left: 20%;"></div>
-    <div class="star" style="top: 15%; left: 70%;"></div>
-    <div class="star" style="top: 5%; left: 50%;"></div>
-    <div class="star" style="top: 20%; left: 90%;"></div>
-    <div class="star" style="top: 8%; left: 30%;"></div>
-    <div class="star" style="top: 12%; left: 60%;"></div>
-    <div class="star" style="top: 18%; left: 40%;"></div>
-    <audio id="english" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/09-32-18-637_1.mp3"></audio>
-    <audio id="chinese" preload="auto" src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio>
-    <script>
-        const toggle = document.getElementById('toggle');
-        const body = document.body;
-        const desert = document.getElementById('desert');
-        const trees = document.querySelectorAll('.tree');
-        const shrubs = document.querySelectorAll('.shrub');
-        const english = document.getElementById('english');
-        const chinese = document.getElementById('chinese');
-
-        // Preload audio
-        english.load();
-        chinese.load();
-
-        // Unlock audio on first click
-        document.body.addEventListener('click', () => {
-            english.muted = true;
-            english.play().then(() => english.pause()).catch(e => console.error('Unlock error:', e));
-            chinese.muted = true;
-            chinese.play().then(() => chinese.pause()).catch(e => console.error('Unlock error:', e));
-            english.muted = false;
-            chinese.muted = false;
-        }, { once: true });
-
-        // Day/Night toggle
-        toggle.addEventListener('click', () => {
-            body.classList.toggle('night');
-            toggle.textContent = body.classList.contains('night') ? 'Day Mode' : 'Night Mode';
-        });
-
-        // Desert click - glow
-        desert.addEventListener('click', () => {
-            const willGlow = !desert.classList.contains('glow');
-            desert.classList.toggle('glow');
-            trees.forEach(tree => tree.classList.toggle('glow'));
-            shrubs.forEach(shrub => shrub.classList.toggle('glow'));
-            if (willGlow) {
-                try {
-                    const whisper = Math.random() > 0.5 ? english : chinese;
-                    whisper.currentTime = 0;
-                    whisper.play().catch(e => console.error('Play error:', e));
-                } catch (e) {
-                    console.error('Audio error:', e);
-                }
-            }
-        });
-    </script>
+  <!-- The div element to hold the map -->
+  <div id="map"></div>
 </body>
 </html>
