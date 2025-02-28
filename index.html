@@ -1,33 +1,22 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Joshua Tree National Park Map</title>
+    <title>Photorealistic 3D Maps in Maps JavaScript Unlabeled Map Demo</title>
     <style>
-      html, body {
-        height: 100%;
+      html,
+      body {
+        height:100%;
         margin: 0;
         padding: 0;
       }
-      #map {
-        height: 100%;
-        width: 100%;
+
+      gmp-map-3d {
+        height: 400px;
       }
     </style>
   </head>
   <body>
-    <div id="map"></div>
-    <script>
-      function initMap() {
-        const joshuaTreeLocation = { lat: 33.8808844, lng: -115.8947496 };
-        const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 13,                    // Matches the '13z' from the URL
-          center: joshuaTreeLocation,  // Coordinates from the URL
-          mapTypeId: "roadmap"         // Default from the URL; change to "satellite" if desired
-        });
-      }
-    </script>
-    <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
-    </script>
+    <gmp-map-3d mode="satellite" center="37.819852, -122.478549" tilt="75" range="2000" heading="330"></gmp-map-3d>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&v=alpha&libraries=maps3d"></script>
   </body>
 </html>
