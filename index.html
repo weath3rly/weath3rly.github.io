@@ -6,11 +6,7 @@
         body {
             margin: 0;
             overflow: hidden;
-            background: linear-gradient(#D2B48C, #87CEEB); /* Day sky */
-            transition: background 1s;
-        }
-        body.night {
-            background: linear-gradient(#4A3728, #1C2526); /* Night sky */
+            background: #000000; /* Black sky for both day and night */
         }
         #toggle {
             position: absolute;
@@ -48,6 +44,7 @@
         const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setClearColor(0x000000, 1); // Set renderer background to black
 
         // Camera Controls
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -60,15 +57,6 @@
         const directionalLight = new THREE.DirectionalLight(0xFF4500, 1);
         directionalLight.position.set(5, 10, 5);
         scene.add(directionalLight);
-
-        // Skybox with Two Planets
-        const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
-        const skyMaterial = new THREE.MeshBasicMaterial({
-            map: new THREE.TextureLoader().load('https://i.imgur.com/YyR0yqe.jpg'),
-            side: THREE.BackSide
-        });
-        const sky = new THREE.Mesh(skyGeometry, skyMaterial);
-        scene.add(sky);
 
         // Desert Ground
         const groundGeometry = new THREE.PlaneGeometry(100, 100);
@@ -236,12 +224,11 @@
             cacti.push({ group: cactusGroup, material: cactusMaterial });
         });
 
-        // Floating Orbs - Add Reappearance After Pop
+        // Floating Orbs
         const orbs = [];
         const orbCount = 50;
         const orbPositions = [];
 
-        // Initial positions
         for (let i = 0; i < orbCount; i++) {
             let x, y, z, validPosition = false;
             while (!validPosition) {
@@ -293,16 +280,16 @@
             orbs.push(orbGroup);
         });
 
-        // Stars
+        // Stars - Always Visible Since Sky is Black
         const stars = [];
         const starPositions = [
             { x: 2, y: 9, z: -9 },
             { x: 7, y: 8.5, z: 7 },
             { x: 0, y: 9.5, z: -5 },
             { x: 9, y: 8, z: 9 },
-            { x: 3, y: 9.2, z: -7, night: true },
-            { x: 6, y: 8.8, z: 6, night: true },
-            { x: -4, y: 8.2, z: 4, night: true }
+            { x: 3, y: 9.2, z: -7 },
+            { x: 6, y: 8.8, z: 6 },
+            { x: -4, y: 8.2, z: 4 }
         ];
 
         starPositions.forEach(pos => {
@@ -310,21 +297,16 @@
             const starMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
             const star = new THREE.Mesh(starGeometry, starMaterial);
             star.position.set(pos.x, pos.y, pos.z);
-            if (pos.night) star.visible = false;
             scene.add(star);
-            stars.push({ mesh: star, night: pos.night || false });
+            stars.push({ mesh: star });
         });
 
-        // Day/Night Toggle
+        // Day/Night Toggle - Now Only Affects Lighting
         let isNight = false;
         const toggleButton = document.getElementById('toggle');
         toggleButton.addEventListener('click', () => {
             isNight = !isNight;
-            document.body.classList.toggle('night');
             directionalLight.color.set(isNight ? 0x1A1A4D : 0xFF4500);
-            stars.forEach(star => {
-                if (star.night) star.mesh.visible = isNight;
-            });
             toggleButton.textContent = isNight ? 'Day Mode' : 'Night Mode';
         });
 
@@ -338,7 +320,6 @@
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
 
-            // Check for orb clicks first
             let orbClicked = false;
             for (let i = 0; i < orbs.length; i++) {
                 const orbGroup = orbs[i];
@@ -346,11 +327,9 @@
                 const orb = orbGroup.children[0];
                 const intersectsOrb = raycaster.intersectObject(orb);
                 if (intersectsOrb.length > 0) {
-                    // Pop the orb
                     orbGroup.userData.visible = false;
                     orbGroup.visible = false;
 
-                    // Create burst effect
                     const burstGeometry = new THREE.BufferGeometry();
                     const burstPositions = [];
                     const burstVelocities = [];
@@ -376,7 +355,6 @@
                     burst.userData = { lifetime: 2, age: 0 };
                     scene.add(burst);
 
-                    // Respawn orb at new random position after burst
                     setTimeout(() => {
                         let newX, newY, newZ, validPosition = false;
                         while (!validPosition) {
@@ -400,14 +378,13 @@
                         orbGroup.position.set(newX, newY, newZ);
                         orbGroup.userData.visible = true;
                         orbGroup.visible = true;
-                    }, 2000); // Respawn after 2 seconds (burst lifetime)
+                    }, 2000);
 
                     orbClicked = true;
                     break;
                 }
             }
 
-            // If no orb was clicked, check for desert click
             if (!orbClicked) {
                 const intersects = raycaster.intersectObject(ground);
                 if (intersects.length > 0) {
