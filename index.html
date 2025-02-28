@@ -1,52 +1,81 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Maps and Places Autocomplete</title>
+    <title>Joshua Tree National Park Experience</title>
     <script>
       async function init() {
         await customElements.whenDefined('gmp-map');
 
         const map = document.querySelector('gmp-map');
         const marker = document.querySelector('gmp-advanced-marker');
-        const placePicker = document.querySelector('gmpx-place-picker');
         const infowindow = new google.maps.InfoWindow();
 
+        // Set map options: satellite view, centered on Joshua Tree
         map.innerMap.setOptions({
-          mapTypeControl: false
+          mapTypeId: 'satellite', // Realistic park imagery
+          mapTypeControl: false,  // Hide map type controls
+          zoom: 12,               // Wider view of the park
+          center: { lat: 34.1347, lng: -116.3131 } // Joshua Tree NP
         });
 
-        placePicker.addEventListener('gmpx-placechange', () => {
-          const place = placePicker.value;
-
-          if (!place.location) {
-            window.alert(
-              "No details available for input: '" + place.name + "'"
-            );
-            infowindow.close();
-            marker.position = null;
-            return;
+        // Example predefined park locations
+        const parkLocations = [
+          {
+            name: "Keys View",
+            location: { lat: 33.927, lng: -116.187 },
+            description: "A stunning lookout over the Coachella Valley."
+          },
+          {
+            name: "Skull Rock",
+            location: { lat: 34.001, lng: -116.097 },
+            description: "A famous rock formation resembling a skull."
           }
+        ];
 
-          if (place.viewport) {
-            map.innerMap.fitBounds(place.viewport);
-          } else {
-            map.center = place.location;
-            map.zoom = 17;
-          }
+        // Optional: Add a dropdown instead of place picker
+        const locationSelect = document.createElement('select');
+        locationSelect.innerHTML = '<option value="">Select a Location</option>' +
+          parkLocations.map((loc, i) => `<option value="${i}">${loc.name}</option>`).join('');
+        document.querySelector('.place-picker-container').appendChild(locationSelect);
 
+        // Event listener for dropdown (or keep place picker logic)
+        locationSelect.addEventListener('change', () => {
+          const selectedIndex = locationSelect.value;
+          if (selectedIndex === "") return;
+
+          const place = parkLocations[selectedIndex];
+          map.center = place.location;
           marker.position = place.location;
           infowindow.setContent(
-            `<strong>${place.displayName}</strong><br>
-             <span>${place.formattedAddress}</span>
-          `);
+            `<strong>${place.name}</strong><br><span>${place.description}</span>`
+          );
           infowindow.open(map.innerMap, marker);
         });
+
+        // If keeping the place picker, tweak its behavior
+        const placePicker = document.querySelector('gmpx-place-picker');
+        if (placePicker) {
+          placePicker.addEventListener('gmpx-placechange', () => {
+            const place = placePicker.value;
+            if (!place?.location) {
+              window.alert("No details available for: '" + place?.name + "'");
+              infowindow.close();
+              marker.position = null;
+              return;
+            }
+            map.center = place.location;
+            marker.position = place.location;
+            infowindow.setContent(
+              `<strong>${place.displayName}</strong><br><span>${place.formattedAddress}</span>`
+            );
+            infowindow.open(map.innerMap, marker);
+          });
+        }
       }
 
       document.addEventListener('DOMContentLoaded', init);
     </script>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js">
-    </script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js"></script>
     <style>
       html,
       body {
@@ -54,18 +83,29 @@
         margin: 0;
         padding: 0;
       }
-
       .place-picker-container {
         padding: 20px;
+        background: rgba(255, 255, 255, 0.8); /* Readable overlay */
+        position: absolute;
+        top: 10px;
+        left: 10px;
+      }
+      gmp-map {
+        height: 100%;
+        width: 100%;
+      }
+      select {
+        padding: 5px;
+        font-size: 16px;
       }
     </style>
   </head>
   <body>
-    <gmpx-api-loader key="AIzaSyC8A_clnd6t1v6I8QnldHTwFCuvnEuMeqY" solution-channel="GMP_GE_mapsandplacesautocomplete_v2">
-    </gmpx-api-loader>
-    <gmp-map center="40.749933,-73.98633" zoom="13" map-id="DEMO_MAP_ID">
+    <gmpx-api-loader key="YOUR_API_KEY" solution-channel="GMP_GE_mapsandplacesautocomplete_v2"></gmpx-api-loader>
+    <gmp-map>
       <div slot="control-block-start-inline-start" class="place-picker-container">
-        <gmpx-place-picker placeholder="Enter an address"></gmpx-place-picker>
+        <!-- Optional: Keep place picker or remove it -->
+        <gmpx-place-picker placeholder="Search within Joshua Tree"></gmpx-place-picker>
       </div>
       <gmp-advanced-marker></gmp-advanced-marker>
     </gmp-map>
