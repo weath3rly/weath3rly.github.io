@@ -236,11 +236,12 @@
             cacti.push({ group: cactusGroup, material: cactusMaterial });
         });
 
-        // Floating Orbs - Add Pop/Explosion Effect
+        // Floating Orbs - Add Reappearance After Pop
         const orbs = [];
         const orbCount = 50;
         const orbPositions = [];
 
+        // Initial positions
         for (let i = 0; i < orbCount; i++) {
             let x, y, z, validPosition = false;
             while (!validPosition) {
@@ -287,7 +288,7 @@
             orbGroup.add(trails);
 
             orbGroup.position.set(pos.x, pos.y, pos.z);
-            orbGroup.userData = { visible: true }; // Track visibility for popping
+            orbGroup.userData = { visible: true };
             scene.add(orbGroup);
             orbs.push(orbGroup);
         });
@@ -339,10 +340,10 @@
 
             // Check for orb clicks first
             let orbClicked = false;
-            for (let i = orbs.length - 1; i >= 0; i--) {
+            for (let i = 0; i < orbs.length; i++) {
                 const orbGroup = orbs[i];
-                if (!orbGroup.userData.visible) continue; // Skip already popped orbs
-                const orb = orbGroup.children[0]; // The sphere inside the group
+                if (!orbGroup.userData.visible) continue;
+                const orb = orbGroup.children[0];
                 const intersectsOrb = raycaster.intersectObject(orb);
                 if (intersectsOrb.length > 0) {
                     // Pop the orb
@@ -361,7 +362,7 @@
                         const y = radius * Math.sin(phi) * Math.sin(theta);
                         const z = radius * Math.cos(phi);
                         burstPositions.push(orbGroup.position.x + x, orbGroup.position.y + y, orbGroup.position.z + z);
-                        burstVelocities.push(x * 0.05, y * 0.05, z * 0.05); // Velocity for outward motion
+                        burstVelocities.push(x * 0.05, y * 0.05, z * 0.05);
                     }
                     burstGeometry.setAttribute('position', new THREE.Float32BufferAttribute(burstPositions, 3));
                     burstGeometry.setAttribute('velocity', new THREE.Float32BufferAttribute(burstVelocities, 3));
@@ -372,8 +373,34 @@
                         opacity: 0.8
                     });
                     const burst = new THREE.Points(burstGeometry, burstMaterial);
-                    burst.userData = { lifetime: 2, age: 0 }; // 2-second lifetime
+                    burst.userData = { lifetime: 2, age: 0 };
                     scene.add(burst);
+
+                    // Respawn orb at new random position after burst
+                    setTimeout(() => {
+                        let newX, newY, newZ, validPosition = false;
+                        while (!validPosition) {
+                            newX = (Math.random() - 0.5) * 80;
+                            newY = 1 + Math.random() * 2;
+                            newZ = (Math.random() - 0.5) * 80;
+                            validPosition = true;
+                            for (let j = 0; j < orbs.length; j++) {
+                                if (i === j || !orbs[j].userData.visible) continue;
+                                const distance = Math.sqrt(
+                                    (newX - orbs[j].position.x) ** 2 +
+                                    (newY - orbs[j].position.y) ** 2 +
+                                    (newZ - orbs[j].position.z) ** 2
+                                );
+                                if (distance < 1.5) {
+                                    validPosition = false;
+                                    break;
+                                }
+                            }
+                        }
+                        orbGroup.position.set(newX, newY, newZ);
+                        orbGroup.userData.visible = true;
+                        orbGroup.visible = true;
+                    }, 2000); // Respawn after 2 seconds (burst lifetime)
 
                     orbClicked = true;
                     break;
@@ -448,7 +475,6 @@
                 }
             });
 
-            // Update burst particles
             scene.children.forEach(child => {
                 if (child instanceof THREE.Points && child.userData.lifetime) {
                     child.userData.age += 0.016;
@@ -460,7 +486,7 @@
                     const velocities = child.geometry.attributes.velocity.array;
                     for (let i = 0; i < positions.length; i += 3) {
                         positions[i] += velocities[i];
-                        positions[i + 1] += velocities[i + 1] - 0.01; // Add gravity
+                        positions[i + 1] += velocities[i + 1] - 0.01;
                         positions[i + 2] += velocities[i + 2];
                     }
                     child.geometry.attributes.position.needsUpdate = true;
