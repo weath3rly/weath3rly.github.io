@@ -280,44 +280,48 @@
             orbs.push(orbGroup);
         });
 
-        // Stars - Increased to 1,007 (7 + 1,000)
+        // Starfield - Milky Way Effect with 50,000 Stars
         const stars = [];
-        const starPositions = [
-            { x: 2, y: 9, z: -9 },
-            { x: 7, y: 8.5, z: 7 },
-            { x: 0, y: 9.5, z: -5 },
-            { x: 9, y: 8, z: 9 },
-            { x: 3, y: 9.2, z: -7 },
-            { x: 6, y: 8.8, z: 6 },
-            { x: -4, y: 8.2, z: 4 }
-        ];
+        const starCount = 50000; // Massive starfield for Milky Way effect
+        const starGeometry = new THREE.BufferGeometry();
+        const starPositions = [];
+        const starColors = [];
 
-        // Add original 7 stars
-        starPositions.forEach(pos => {
-            const starGeometry = new THREE.SphereGeometry(0.02, 8, 8);
-            const starMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
-            const star = new THREE.Mesh(starGeometry, starMaterial);
-            star.position.set(pos.x, pos.y, pos.z);
-            scene.add(star);
-            stars.push({ mesh: star });
-        });
-
-        // Add 1,000 more stars
-        for (let i = 0; i < 1000; i++) {
-            const starGeometry = new THREE.SphereGeometry(0.02, 8, 8);
-            const starMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
-            const star = new THREE.Mesh(starGeometry, starMaterial);
-            // Random spherical coordinates for a sky dome effect
+        // Generate stars with a Milky Way-like band
+        for (let i = 0; i < starCount; i++) {
+            // Spherical coordinates with clustering for Milky Way band
             const theta = Math.random() * Math.PI * 2;
-            const phi = Math.random() * Math.PI;
-            const radius = 400; // Far enough to cover the sky
+            const phi = Math.acos((Math.random() - 0.5) * 2); // Uniform distribution on sphere
+            const radius = 400 + Math.random() * 100; // Spread stars between 400 and 500 units
+
+            // Cluster stars in a band (Milky Way effect) - more stars near the galactic plane (phi around PI/2)
+            const bandDensity = Math.sin(phi) * Math.sin(phi); // Peaks at phi = PI/2 (equator)
+            if (Math.random() > bandDensity) continue; // Skip some stars outside the band for clustering
+
             const x = radius * Math.sin(phi) * Math.cos(theta);
             const y = radius * Math.cos(phi);
             const z = radius * Math.sin(phi) * Math.sin(theta);
-            star.position.set(x, y, z);
-            scene.add(star);
-            stars.push({ mesh: star });
+            starPositions.push(x, y, z);
+
+            // Vary star colors (white, pale blues, yellows) for realism
+            const colorChoice = Math.random();
+            let color;
+            if (colorChoice < 0.6) color = new THREE.Color(0xFFFFFF); // White
+            else if (colorChoice < 0.8) color = new THREE.Color(0xB0C4DE); // Pale blue
+            else color = new THREE.Color(0xFFFFE0); // Pale yellow
+            starColors.push(color.r, color.g, color.b);
         }
+
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+        starGeometry.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
+        const starMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8
+        });
+        const starField = new THREE.Points(starGeometry, starMaterial);
+        scene.add(starField);
 
         // Day/Night Toggle
         let isNight = false;
