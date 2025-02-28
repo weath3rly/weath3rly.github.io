@@ -17,7 +17,7 @@
         body.night { 
             background: linear-gradient(#4A3728, #1C2526); /* Night */
         }
-        /* Ground - CGI desert with hyper-real details */
+        /* Ground - CGI desert */
         #desert { 
             position: absolute; 
             top: 0; 
@@ -29,20 +29,18 @@
             transition: filter 0.5s; 
             filter: brightness(0.7); 
         }
-        /* Sand texture - layered gradients for realism */
-        #desert:: перед { 
+        #desert::before { 
             content: ''; 
             position: absolute; 
             top: 0; 
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: radial-gradient(ellipse at 70% 70%, #D4A76A 20%, transparent 50%), /* Dune 1 */
-                        radial-gradient(ellipse at 30% 80%, #C19A6B 15%, transparent 50%), /* Dune 2 */
-                        linear-gradient(to bottom, rgba(193, 154, 107, 0.2) 0%, transparent 50%); /* Sand texture */
+            background: radial-gradient(ellipse at 70% 70%, #D4A76A 20%, transparent 50%), 
+                        radial-gradient(ellipse at 30% 80%, #C19A6B 15%, transparent 50%), 
+                        linear-gradient(to bottom, rgba(193, 154, 107, 0.2) 0%, transparent 50%); 
             z-index: 1; 
         }
-        /* Glow effect - CGI style */
         #desert.glow { 
             filter: brightness(1.5); 
             box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.5), 0 0 30px rgba(0, 255, 255, 0.3); 
@@ -59,7 +57,7 @@
         body.night .glow {
             animation: glowCycle 3s infinite;
         }
-        /* CGI Joshua trees - stylized shapes */
+        /* Hyper-realistic Joshua trees - Google Earth style */
         .tree { 
             position: absolute; 
             z-index: 2; 
@@ -68,32 +66,64 @@
             content: ''; 
             position: absolute; 
             width: 20px; 
-            height: 100px; 
-            background: linear-gradient(to bottom, #4A3728, #6B4423); /* Trunk */
+            height: 120px; 
+            background: linear-gradient(to bottom, #4A3728, #6B4423); /* Realistic trunk */
             border-radius: 5px; 
+            box-shadow: inset 5px 0 5px rgba(0, 0, 0, 0.3), /* Trunk texture */
+                        inset -5px 0 5px rgba(255, 255, 255, 0.1); /* Light highlight */
         }
         .tree::after { 
             content: ''; 
             position: absolute; 
-            top: -50px; 
-            left: -20px; 
-            width: 60px; 
-            height: 60px; 
-            background: radial-gradient(circle at center, #6B8E23 20%, #556B2F 50%, transparent 70%); /* Foliage */
+            top: -60px; 
+            left: -40px; 
+            width: 100px; 
+            height: 100px; 
+            background: radial-gradient(circle at 40% 40%, #6B8E23 20%, #556B2F 50%, #3D5A1F 70%, transparent 80%); /* Detailed foliage */
             border-radius: 50%; 
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5); /* Realistic shadow */
+            clip-path: polygon(0% 0%, 20% 10%, 30% 0%, 40% 20%, 50% 0%, 60% 20%, 70% 0%, 80% 10%, 100% 0%, 90% 30%, 100% 50%, 90% 70%, 100% 90%, 80% 80%, 70% 100%, 60% 80%, 50% 100%, 40% 80%, 30% 100%, 20% 80%, 10% 100%, 0% 80%, 10% 50%, 0% 30%); /* Spiky foliage shape */
         }
-        /* Tree glow */
         .tree.glow::before { 
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); /* Trunk glow */
+            box-shadow: inset 5px 0 5px rgba(0, 0, 0, 0.3), 
+                        inset -5px 0 5px rgba(255, 255, 255, 0.1), 
+                        0 0 20px rgba(0, 255, 255, 0.5); 
         }
         .tree.glow::after { 
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.7); /* Foliage glow */
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), 
+                        0 0 30px rgba(0, 255, 255, 0.7); 
         }
         body.night .tree.glow::before { 
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.7); 
+            box-shadow: inset 5px 0 5px rgba(0, 0, 0, 0.3), 
+                        inset -5px 0 5px rgba(255, 255, 255, 0.1), 
+                        0 0 30px rgba(0, 255, 255, 0.7); 
         }
         body.night .tree.glow::after { 
-            box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); 
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.8), 
+                        0 0 40px rgba(0, 255, 255, 0.9); 
+        }
+        /* Hyper-realistic desert shrubs - Google Earth style */
+        .shrub { 
+            position: absolute; 
+            z-index: 2; 
+        }
+        .shrub::before { 
+            content: ''; 
+            position: absolute; 
+            width: 60px; 
+            height: 40px; 
+            background: radial-gradient(circle at 50% 50%, #6B8E23 20%, #556B2F 40%, #3D5A1F 60%, transparent 80%); /* Shrub foliage */
+            border-radius: 50%; 
+            clip-path: polygon(0% 0%, 20% 10%, 30% 0%, 40% 20%, 50% 0%, 60% 20%, 70% 0%, 80% 10%, 100% 0%, 90% 30%, 100% 50%, 80% 40%, 70% 60%, 60% 40%, 50% 60%, 40% 40%, 30% 60%, 20% 40%, 10% 60%, 0% 40%); /* Irregular shape */
+            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4); /* Shadow */
+        }
+        .shrub.glow::before { 
+            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4), 
+                        0 0 20px rgba(0, 255, 255, 0.5); 
+        }
+        body.night .shrub.glow::before { 
+            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4), 
+                        0 0 30px rgba(0, 255, 255, 0.7); 
         }
         /* Sun/Moon - CGI lighting */
         .sun-moon { 
@@ -102,15 +132,15 @@
             left: 50%; 
             width: 50px; 
             height: 50px; 
-            background: radial-gradient(circle, #FFD700 20%, transparent 70%); /* Sun */
+            background: radial-gradient(circle, #FFD700 20%, transparent 70%); 
             border-radius: 50%; 
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); /* Sun glow */
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); 
             transition: background 1s, box-shadow 1s; 
             z-index: 1; 
         }
         body.night .sun-moon { 
-            background: radial-gradient(circle, #C0C0C0 20%, transparent 70%); /* Moon */
-            box-shadow: 0 0 30px rgba(192, 192, 192, 0.5); /* Moon glow */
+            background: radial-gradient(circle, #C0C0C0 20%, transparent 70%); 
+            box-shadow: 0 0 30px rgba(192, 192, 192, 0.5); 
         }
         .star { 
             position: absolute; 
@@ -150,6 +180,9 @@
     <div class="tree" style="bottom: 10%; left: 20%;"></div>
     <div class="tree" style="bottom: 15%; left: 80%; transform: scale(0.8);"></div>
     <div class="tree" style="bottom: 5%; left: 50%; transform: scale(1.2);"></div>
+    <div class="shrub" style="bottom: 5%; left: 30%;"></div>
+    <div class="shrub" style="bottom: 10%; left: 70%; transform: scale(0.7);"></div>
+    <div class="shrub" style="bottom: 20%; left: 40%; transform: scale(0.9);"></div>
     <div class="star" style="top: 10%; left: 20%;"></div>
     <div class="star" style="top: 15%; left: 70%;"></div>
     <div class="star" style="top: 5%; left: 50%;"></div>
@@ -164,6 +197,7 @@
         const body = document.body;
         const desert = document.getElementById('desert');
         const trees = document.querySelectorAll('.tree');
+        const shrubs = document.querySelectorAll('.shrub');
         const english = document.getElementById('english');
         const chinese = document.getElementById('chinese');
 
@@ -191,7 +225,8 @@
         desert.addEventListener('click', () => {
             const willGlow = !desert.classList.contains('glow');
             desert.classList.toggle('glow');
-            trees.forEach(tree => tree.classList.toggle('glow')); // Trees glow with desert
+            trees.forEach(tree => tree.classList.toggle('glow'));
+            shrubs.forEach(shrub => shrub.classList.toggle('glow'));
             if (willGlow) {
                 try {
                     const whisper = Math.random() > 0.5 ? english : chinese;
