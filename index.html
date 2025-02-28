@@ -81,19 +81,17 @@
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // Joshua Trees - Increased to 30
+        // Joshua Trees (30 from base code)
         const trees = [];
-        const treeCount = 30; // Multiplied from 3 to 30
+        const treeCount = 30;
         const treePositions = [];
 
-        // Generate random positions, ensuring no overlap
         for (let i = 0; i < treeCount; i++) {
             let x, z, validPosition = false;
             while (!validPosition) {
-                x = (Math.random() - 0.5) * 80; // Spread across -40 to 40
+                x = (Math.random() - 0.5) * 80;
                 z = (Math.random() - 0.5) * 80;
                 validPosition = true;
-                // Check for overlap (minimum distance of 3 units)
                 for (let pos of treePositions) {
                     const distance = Math.sqrt((x - pos.x) ** 2 + (z - pos.z) ** 2);
                     if (distance < 3) {
@@ -102,13 +100,12 @@
                     }
                 }
             }
-            const scale = 0.8 + Math.random() * 0.4; // Random scale between 0.8 and 1.2
+            const scale = 0.8 + Math.random() * 0.4;
             treePositions.push({ x, z, scale });
         }
 
         treePositions.forEach(pos => {
             const treeGroup = new THREE.Group();
-            // Trunk
             const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1.2, 16);
             const trunkMaterial = new THREE.MeshStandardMaterial({
                 color: 0x4A3728,
@@ -117,7 +114,6 @@
             });
             const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
             treeGroup.add(trunk);
-            // Foliage
             const foliageGeometry = new THREE.SphereGeometry(0.5, 16, 16);
             const foliageMaterial = new THREE.MeshStandardMaterial({
                 color: 0x3D5A1F,
@@ -127,7 +123,6 @@
             const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
             foliage.position.set(0, 1.2, 0);
             treeGroup.add(foliage);
-            // Glowing Vines (Points)
             const vineGeometry = new THREE.BufferGeometry();
             const vinePositions = [];
             for (let i = 0; i < 50; i++) {
@@ -241,14 +236,30 @@
             cacti.push({ group: cactusGroup, material: cactusMaterial });
         });
 
-        // Floating Orbs
+        // Floating Orbs - Increased to 50
         const orbs = [];
-        const orbPositions = [
-            { x: 3, y: 2, z: -4 },
-            { x: -5, y: 1.5, z: 2 },
-            { x: 0, y: 2.5, z: -3 },
-            { x: -2, y: 1.8, z: 4 }
-        ];
+        const orbCount = 50; // Multiplied from 4 to 50
+        const orbPositions = [];
+
+        // Generate random positions for orbs, ensuring no overlap
+        for (let i = 0; i < orbCount; i++) {
+            let x, y, z, validPosition = false;
+            while (!validPosition) {
+                x = (Math.random() - 0.5) * 80; // Spread across -40 to 40
+                y = 1 + Math.random() * 2; // Height between 1 and 3
+                z = (Math.random() - 0.5) * 80;
+                validPosition = true;
+                // Check for overlap (minimum distance of 1.5 units)
+                for (let pos of orbPositions) {
+                    const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2 + (z - pos.z) ** 2);
+                    if (distance < 1.5) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+            }
+            orbPositions.push({ x, y, z });
+        }
 
         orbPositions.forEach(pos => {
             const orbGroup = new THREE.Group();
