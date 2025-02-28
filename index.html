@@ -17,7 +17,7 @@
         body.night { 
             background: linear-gradient(#4A3728, #1C2526); /* Night */
         }
-        /* Ground - CGI desert with hyper-real details */
+        /* Ground - CGI desert with hyper-real texture */
         #desert { 
             position: absolute; 
             top: 0; 
@@ -29,18 +29,36 @@
             transition: filter 0.5s; 
             filter: brightness(0.7); 
         }
-        /* Sand texture - layered gradients for realism */
-        #desert:: перед { 
+        /* Layered ground texture - dunes, sand, ridges */
+        #desert::before { 
             content: ''; 
             position: absolute; 
             top: 0; 
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: radial-gradient(ellipse at 70% 70%, #D4A76A 20%, transparent 50%), /* Dune 1 */
-                        radial-gradient(ellipse at 30% 80%, #C19A6B 15%, transparent 50%), /* Dune 2 */
-                        linear-gradient(to bottom, rgba(193, 154, 107, 0.2) 0%, transparent 50%); /* Sand texture */
+            background: 
+                /* Dunes */
+                radial-gradient(ellipse at 70% 70%, #D4A76A 20%, transparent 50%), 
+                radial-gradient(ellipse at 30% 80%, #C19A6B 15%, transparent 50%), 
+                /* Sand grain texture */
+                linear-gradient(to bottom, rgba(193, 154, 107, 0.2) 0%, transparent 50%), 
+                /* Subtle ridges */
+                repeating-linear-gradient(45deg, rgba(139, 90, 43, 0.1) 0px, rgba(139, 90, 43, 0.1) 10px, transparent 10px, transparent 20px); 
             z-index: 1; 
+        }
+        /* Sand shadows - depth */
+        #desert::after { 
+            content: ''; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: 
+                radial-gradient(ellipse at 50% 90%, rgba(0, 0, 0, 0.3) 10%, transparent 50%), /* Shadow under dune */
+                radial-gradient(ellipse at 20% 70%, rgba(0, 0, 0, 0.2) 5%, transparent 50%); /* Shadow under ridge */
+            z-index: 2; 
         }
         /* Glow effect - CGI style */
         #desert.glow { 
@@ -62,14 +80,14 @@
         /* CGI Joshua trees - stylized shapes */
         .tree { 
             position: absolute; 
-            z-index: 2; 
+            z-index: 3; 
         }
         .tree::before { 
             content: ''; 
             position: absolute; 
             width: 20px; 
             height: 100px; 
-            background: linear-gradient(to bottom, #4A3728, #6B4423); /* Trunk */
+            background: linear-gradient(to bottom, #4A3728, #6B4423); 
             border-radius: 5px; 
         }
         .tree::after { 
@@ -79,15 +97,14 @@
             left: -20px; 
             width: 60px; 
             height: 60px; 
-            background: radial-gradient(circle at center, #6B8E23 20%, #556B2F 50%, transparent 70%); /* Foliage */
+            background: radial-gradient(circle at center, #6B8E23 20%, #556B2F 50%, transparent 70%); 
             border-radius: 50%; 
         }
-        /* Tree glow */
         .tree.glow::before { 
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); /* Trunk glow */
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); 
         }
         .tree.glow::after { 
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.7); /* Foliage glow */
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.7); 
         }
         body.night .tree.glow::before { 
             box-shadow: 0 0 30px rgba(0, 255, 255, 0.7); 
@@ -102,15 +119,15 @@
             left: 50%; 
             width: 50px; 
             height: 50px; 
-            background: radial-gradient(circle, #FFD700 20%, transparent 70%); /* Sun */
+            background: radial-gradient(circle, #FFD700 20%, transparent 70%); 
             border-radius: 50%; 
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); /* Sun glow */
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); 
             transition: background 1s, box-shadow 1s; 
             z-index: 1; 
         }
         body.night .sun-moon { 
-            background: radial-gradient(circle, #C0C0C0 20%, transparent 70%); /* Moon */
-            box-shadow: 0 0 30px rgba(192, 192, 192, 0.5); /* Moon glow */
+            background: radial-gradient(circle, #C0C0C0 20%, transparent 70%); 
+            box-shadow: 0 0 30px rgba(192, 192, 192, 0.5); 
         }
         .star { 
             position: absolute; 
@@ -191,7 +208,7 @@
         desert.addEventListener('click', () => {
             const willGlow = !desert.classList.contains('glow');
             desert.classList.toggle('glow');
-            trees.forEach(tree => tree.classList.toggle('glow')); // Trees glow with desert
+            trees.forEach(tree => tree.classList.toggle('glow'));
             if (willGlow) {
                 try {
                     const whisper = Math.random() > 0.5 ? english : chinese;
