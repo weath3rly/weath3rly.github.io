@@ -17,31 +17,52 @@
         body.night { 
             background: linear-gradient(#4A3728, #1C2526); /* Night */
         }
-        /* Ground texture - Mojave Desert */
+        /* CGI desert ground */
         #desert { 
             position: absolute; 
             top: 0; 
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: url('https://media.istockphoto.com/id/511885047/photo/joshua-tree-national-park.jpg?s=612x612&w=0&k=20&c=zIELnrQDlF1OF95x8zVOEF_yg0tUpjRY63TjAUeQtV8=') no-repeat bottom center; /* Mojave Desert */
-            background-size: cover; 
-            filter: brightness(0.7) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); /* Default */
-            transition: filter 0.5s; 
+            background: linear-gradient(to bottom, transparent 50%, #C19A6B 70%, #8B5A2B); /* CGI sand gradient */
             z-index: 0; 
+            transition: filter 0.5s; 
+            filter: brightness(0.7); /* Default */
         }
+        /* CGI dunes - pseudo-elements for stylized shapes */
+        #desert::before { 
+            content: ''; 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 60%; 
+            background: radial-gradient(ellipse at 70% 70%, #D4A76A 20%, transparent 50%); /* Dune 1 */
+            z-index: 1; 
+        }
+        #desert::after { 
+            content: ''; 
+            position: absolute; 
+            bottom: 0; 
+            right: 0; 
+            width: 100%; 
+            height: 40%; 
+            background: radial-gradient(ellipse at 30% 80%, #C19A6B 15%, transparent 50%); /* Dune 2 */
+            z-index: 1; 
+        }
+        /* Glow effect - CGI style */
         #desert.glow { 
-            filter: brightness(1.5) hue-rotate(90deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) !important; /* Glow */
-            -webkit-filter: brightness(1.5) hue-rotate(90deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)) !important; 
+            filter: brightness(1.5); /* Base brightness */
+            box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.5), 0 0 30px rgba(0, 255, 255, 0.3); /* Cyan glow */
         }
         body.night #desert.glow { 
-            filter: brightness(2.0) hue-rotate(90deg) drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) !important; 
-            -webkit-filter: brightness(2.0) hue-rotate(90deg) drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.8)) !important; 
+            filter: brightness(2.0); 
+            box-shadow: inset 0 0 70px rgba(0, 255, 255, 0.7), 0 0 50px rgba(0, 255, 255, 0.5); /* Stronger at night */
         }
         @keyframes glowCycle {
-            0% { filter: brightness(1.5) hue-rotate(90deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); }
-            50% { filter: brightness(1.5) hue-rotate(180deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); }
-            100% { filter: brightness(1.5) hue-rotate(270deg) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5)); }
+            0% { box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.5), 0 0 30px rgba(0, 255, 255, 0.3); } /* Cyan */
+            50% { box-shadow: inset 0 0 50px rgba(147, 112, 219, 0.5), 0 0 30px rgba(147, 112, 219, 0.3); } /* Purple */
+            100% { box-shadow: inset 0 0 50px rgba(50, 205, 50, 0.5), 0 0 30px rgba(50, 205, 50, 0.3); } /* Green */
         }
         body.night .glow {
             animation: glowCycle 3s infinite;
