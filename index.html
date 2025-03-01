@@ -321,7 +321,7 @@
         const starField = new THREE.Points(starGeometry, starMaterial);
         scene.add(starField);
 
-        // Distant Stars (Tiny White Specks) - 100,000, Doubled Size
+        // Distant Stars (Tiny White Specks) - 100,000, Quadrupled Size
         const distantStars = [];
         const distantStarCount = 100000;
         const distantStarGeometry = new THREE.BufferGeometry();
@@ -345,10 +345,10 @@
         distantStarGeometry.setAttribute('position', new THREE.Float32BufferAttribute(distantStarPositions, 3));
         distantStarGeometry.setAttribute('color', new THREE.Float32BufferAttribute(distantStarColors, 3));
         const distantStarMaterial = new THREE.PointsMaterial({
-            size: 0.04, // Doubled from 0.02 to 0.04
+            size: 0.16, // Quadrupled from 0.04 to 0.16
             vertexColors: true,
             transparent: true,
-            opacity: 0.7 // Increased from 0.6 to 0.7 for better visibility
+            opacity: 0.6 // Reduced from 0.7 to 0.6 to balance increased size
         });
         const distantStarField = new THREE.Points(distantStarGeometry, distantStarMaterial);
         scene.add(distantStarField);
