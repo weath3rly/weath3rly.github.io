@@ -321,7 +321,7 @@
         const starField = new THREE.Points(starGeometry, starMaterial);
         scene.add(starField);
 
-        // Distant Stars (White Specks) - 100,000, 10x Size with Glow
+        // Distant Stars (White Specks) - 100,000, 100x Size
         const distantStars = [];
         const distantStarCount = 100000;
         const distantStarGeometry = new THREE.BufferGeometry();
@@ -348,9 +348,9 @@
         // Custom Shader for Glowing Effect
         const distantStarMaterial = new THREE.ShaderMaterial({
             uniforms: {
-                pointSize: { value: 1.6 }, // 10x size: 0.16 to 1.6
+                pointSize: { value: 160 }, // 100x size: 1.6 to 160
                 glowColor: { value: new THREE.Color(0xFFFFFF) },
-                glowIntensity: { value: 1.5 }
+                glowIntensity: { value: 1.2 } // Reduced from 1.5 to 1.2 for balance
             },
             vertexShader: `
                 attribute vec3 color;
@@ -372,7 +372,7 @@
                     if (dist > 0.5) discard;
                     float glow = 1.0 - dist * 2.0;
                     glow = pow(glow, glowIntensity);
-                    gl_FragColor = vec4(vColor * glowColor * glow, glow * 0.5);
+                    gl_FragColor = vec4(vColor * glowColor * glow, glow * 0.3); // Reduced opacity for balance
                 }
             `,
             transparent: true,
