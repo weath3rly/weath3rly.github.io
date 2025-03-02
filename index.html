@@ -35,7 +35,7 @@
     </style>
 </head>
 <body>
-    <div id="instructions">Click to start navigation (WASD to move, mouse to look, scroll to zoom, double-click to look east/west)</div>
+    <div id="instructions">Click to start navigation (WASD to move, mouse to look, scroll to zoom, press B to toggle building mode, click rocks to place blocks)</div>
     <button id="toggle">Toggle Day/Night</button>
     <canvas id="canvas"></canvas>
     <!-- Placeholder audio (whispers) -->
@@ -75,13 +75,10 @@
         const moveSpeed = 0.5;
         let isMoving = false;
 
-        // Double-Click State for East/West Rotation
-        let lastLookDirection = 'west'; // Start with west
-        let isRotating = false;
-        let targetYaw = 0;
-        let currentYaw = 0;
-        let rotationStartTime = 0;
-        const rotationDuration = 0.5; // 0.5 seconds for smooth rotation
+        // Building Mode State
+        let buildingMode = false;
+        const placedBlocks = [];
+        const maxBlocks = 50; // Limit to 50 blocks to avoid performance issues
 
         // Pointer Lock Setup
         const instructions = document.getElementById('instructions');
@@ -97,7 +94,7 @@
             instructions.style.display = 'block';
         });
 
-        // Keyboard Controls for Movement
+        // Keyboard Controls for Movement and Building Mode
         document.addEventListener('keydown', (event) => {
             switch (event.code) {
                 case 'KeyW':
@@ -115,6 +112,10 @@
                 case 'KeyD':
                     moveState.right = true;
                     isMoving = true;
+                    break;
+                case 'KeyB':
+                    buildingMode = !buildingMode;
+                    console.log(`Building mode: ${buildingMode ? 'ON' : 'OFF'}`);
                     break;
             }
         });
@@ -136,19 +137,6 @@
             }
             if (!moveState.forward && !moveState.backward && !moveState.left && !moveState.right) {
                 isMoving = false;
-            }
-        });
-
-        // Double-Click to Look East/West
-        document.addEventListener('dblclick', () => {
-            if (controls.isLocked) {
-                isRotating = true;
-                rotationStartTime = Date.now() / 1000; // Current time in seconds
-                currentYaw = controls.getObject().rotation.y;
-
-                // Toggle between east (90 degrees) and west (-90 degrees)
-                lastLookDirection = lastLookDirection === 'east' ? 'west' : 'east';
-                targetYaw = lastLookDirection === 'east' ? Math.PI / 2 : -Math.PI / 2; // East: 90 degrees, West: -90 degrees
             }
         });
 
@@ -431,7 +419,7 @@
             rockGroup.position.set(pos.x, 0, pos.z);
             rockGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(rockGroup);
-            rocks.push({ group: rockGroup, material: rockMaterial });
+            rocks.push({ group: rockGroup, material: rockMaterial, baseRock: baseRock, topRock: topRock });
             console.log(`Rock added at position (${pos.x}, 0, ${pos.z})`);
         });
 
@@ -585,6 +573,57 @@
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
 
+            if (buildingMode) {
+                // Building mode: Place blocks on rocks
+                const rockParts = rocks.flatMap(rock => [rock.baseRock, rock.topRock]);
+                const intersectsRock = raycaster.intersectObjects(rockParts);
+
+                if (intersectsRock.length > 0 && placedBlocks.length < maxBlocks) {
+                    const intersect = intersectsRock[0];
+                    const point = intersect.point;
+                    const normal = intersect.face.normal.clone().applyQuaternion(intersect.object.quaternion);
+
+                    // Snap position to 1-unit grid
+                    const gridPos = new THREE.Vector3(
+                        Math.round(point.x),
+                        Math.round(point.y),
+                        Math.round(point.z)
+                    );
+
+                    // Offset by half the block size along the normal to place on surface
+                    gridPos.add(normal.multiplyScalar(0.5));
+
+                    // Check for overlap with existing blocks
+                    const positionKey = `${gridPos.x},${gridPos.y},${gridPos.z}`;
+                    const isOccupied = placedBlocks.some(block => block.positionKey === positionKey);
+
+                    if (!isOccupied) {
+                        // Create a new glowing block
+                        const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+                        const blockMaterial = new THREE.MeshStandardMaterial({
+                            color: 0x00FFFF,
+                            emissive: 0x00FFFF,
+                            emissiveIntensity: 0.5,
+                            transparent: true,
+                            opacity: 0.8
+                        });
+                        const block = new THREE.Mesh(blockGeometry, blockMaterial);
+                        block.position.copy(gridPos);
+                        scene.add(block);
+
+                        // Store block data
+                        placedBlocks.push({ mesh: block, positionKey: positionKey });
+                        console.log(`Block placed at (${gridPos.x}, ${gridPos.y}, ${gridPos.z})`);
+                    } else {
+                        console.log(`Cannot place block at (${gridPos.x}, ${gridPos.y}, ${gridPos.z}) - position occupied`);
+                    }
+                } else if (placedBlocks.length >= maxBlocks) {
+                    console.log("Maximum block limit reached (50 blocks)");
+                }
+                return; // Exit click handler in building mode
+            }
+
+            // Normal mode: Handle glow and orb popping
             let orbClicked = false;
             for (let i = 0; i < orbs.length; i++) {
                 const orbGroup = orbs[i];
@@ -784,23 +823,6 @@
             }
         }
 
-        // Smooth Rotation for Double-Click East/West
-        function updateRotation() {
-            if (!isRotating) return;
-
-            const currentTime = Date.now() / 1000;
-            const elapsed = currentTime - rotationStartTime;
-            const t = Math.min(elapsed / rotationDuration, 1); // Progress (0 to 1)
-
-            // Linearly interpolate between currentYaw and targetYaw
-            const newYaw = currentYaw + (targetYaw - currentYaw) * t;
-            controls.getObject().rotation.y = newYaw;
-
-            if (t >= 1) {
-                isRotating = false;
-            }
-        }
-
         // Basic Collision Detection
         function checkCollisions() {
             if (camera.position.y < 1.5) {
@@ -841,13 +863,28 @@
                     camera.position.y = 1.5;
                 }
             });
+
+            // Collision with placed blocks
+            placedBlocks.forEach(block => {
+                const blockBox = new THREE.Box3().setFromCenterAndSize(
+                    block.mesh.position,
+                    new THREE.Vector3(1, 1, 1)
+                );
+                if (cameraBox.intersectsBox(blockBox)) {
+                    const cameraDirection = new THREE.Vector3();
+                    camera.getWorldDirection(cameraDirection);
+                    cameraDirection.y = 0;
+                    cameraDirection.normalize();
+                    camera.position.sub(cameraDirection.multiplyScalar(0.1));
+                    camera.position.y = 1.5;
+                }
+            });
         }
 
         // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
             updateMovement();
-            updateRotation();
             checkCollisions();
             animateGlow();
             animateOrbs();
