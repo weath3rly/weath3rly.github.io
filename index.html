@@ -196,7 +196,7 @@
         scene.add(ground);
         console.log("Ground added to scene");
 
-        // Joshua Trees (30, with Taller Spindly Trunks and Quadrupled Leaves)
+        // Joshua Trees (30, with Taller Spindly Trunks and Randomized Leaves)
         const trees = [];
         const treeCount = 30; // Reduce to 20 if performance lags
         const treePositions = [];
@@ -270,7 +270,7 @@
                 trunks.push(trunk);
             }
 
-            // Add quadrupled green, spiky leaves along the upper portion of each trunk
+            // Add green, spiky leaves with randomized placement in the upper portion of each trunk
             const leaves = [];
             const leafMaterial = new THREE.MeshStandardMaterial({
                 color: 0x2E8B57,
@@ -279,33 +279,34 @@
             });
 
             trunkEnds.forEach(end => {
-                const leafLayers = 6; // Increased from 3 to 6
-                const layerSpacing = (end.length * 0.3) / (leafLayers - 1);
-                const startY = end.y - (end.length * 0.3);
+                const leafCount = 36 + Math.floor(Math.random() * 25); // 36–60 leaves per trunk
+                const topSectionHeight = end.length * 0.3; // Top 30% of the trunk
+                const startY = end.y - topSectionHeight; // Starting height for the top section
 
-                for (let layer = 0; layer < leafLayers; layer++) {
-                    const layerY = startY + layer * layerSpacing;
-                    const leafCount = 6 + Math.floor(Math.random() * 5); // Increased from 3–5 to 6–10
+                for (let i = 0; i < leafCount; i++) {
+                    const leafHeight = 0.3 + Math.random() * 0.2;
+                    const leafRadius = 0.05;
+                    const leafGeometry = new THREE.ConeGeometry(leafRadius, leafHeight, 4);
+                    const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
 
-                    for (let i = 0; i < leafCount; i++) {
-                        const leafHeight = 0.3 + Math.random() * 0.2;
-                        const leafRadius = 0.05;
-                        const leafGeometry = new THREE.ConeGeometry(leafRadius, leafHeight, 4); // Reduced segments from 8 to 4
-                        const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+                    // Randomize height within the top 30%
+                    const randomY = startY + Math.random() * topSectionHeight;
 
-                        const layerOffset = layer * 0.1;
-                        const leafX = end.x + Math.cos(end.angle) * layerOffset;
-                        const leafZ = end.z + Math.sin(end.angle) * layerOffset;
-                        leaf.position.set(leafX, layerY, leafZ);
+                    // Randomize angle around the trunk
+                    const randomAngle = THREE.MathUtils.degToRad(Math.random() * 360);
+                    const layerOffset = (randomY - startY) / topSectionHeight * 0.3; // Slight radial expansion as we go up
+                    const leafX = end.x + Math.cos(randomAngle) * layerOffset;
+                    const leafZ = end.z + Math.sin(randomAngle) * layerOffset;
 
-                        const leafAngle = end.angle + THREE.MathUtils.degToRad((Math.random() - 0.5) * 30 + layer * 10);
-                        const leafTilt = THREE.MathUtils.degToRad(15 + Math.random() * 30);
-                        leaf.rotation.z = leafTilt;
-                        leaf.rotation.y = leafAngle;
+                    leaf.position.set(leafX, randomY, leafZ);
 
-                        treeGroup.add(leaf);
-                        leaves.push(leaf);
-                    }
+                    // Orient the leaf outward with randomization
+                    const leafTilt = THREE.MathUtils.degToRad(15 + Math.random() * 30);
+                    leaf.rotation.z = leafTilt;
+                    leaf.rotation.y = randomAngle;
+
+                    treeGroup.add(leaf);
+                    leaves.push(leaf);
                 }
             });
 
