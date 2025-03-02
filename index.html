@@ -71,9 +71,18 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setClearColor(0x000000, 1);
 
+        // Debugging: Check if renderer context is created
+        try {
+            renderer.getContext();
+            console.log("WebGL context created successfully");
+        } catch (e) {
+            console.error("Failed to create WebGL context:", e);
+        }
+
         // Custom Controls with PointerLockControls
         const controls = new THREE.PointerLockControls(camera, document.body);
         camera.position.set(0, 1.5, 15);
+        console.log("Camera initialized at position:", camera.position);
 
         // Zoom State
         let zoomLevel = 1.0;
@@ -173,6 +182,7 @@
         const directionalLight = new THREE.DirectionalLight(0xFF4500, 1);
         directionalLight.position.set(5, 10, 5);
         scene.add(directionalLight);
+        console.log("Lighting added to scene");
 
         // Desert Ground
         const groundGeometry = new THREE.PlaneGeometry(100, 100);
@@ -186,7 +196,7 @@
         scene.add(ground);
         console.log("Ground added to scene");
 
-        // Joshua Trees (30, Doubled Size, with Spindly Branches)
+        // Joshua Trees (30, with Spindly Branches and Orbiting Vines)
         const trees = [];
         const treeCount = 30;
         const treePositions = [];
@@ -215,7 +225,7 @@
             treePositions.push({ x, z, scale });
         }
 
-        treePositions.forEach(pos => {
+        treePositions.forEach((pos, index) => {
             const treeGroup = new THREE.Group();
             const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1.2, 16);
             const trunkMaterial = new THREE.MeshStandardMaterial({
@@ -226,32 +236,29 @@
             const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
             treeGroup.add(trunk);
 
-            // Add spindly branches instead of spherical foliage
+            // Add spindly branches
             const branches = [];
-            const branchCount = 12; // Number of branches per tree
+            const branchCount = 12;
             const branchMaterial = new THREE.MeshStandardMaterial({
-                color: 0x3D5A1F, // Same dark green as the foliage
+                color: 0x3D5A1F,
                 emissive: 0x00FFFF,
                 emissiveIntensity: 0
             });
 
             for (let i = 0; i < branchCount; i++) {
-                const length = 0.8 + Math.random() * 0.4; // Length between 0.8 and 1.2
-                const radius = 0.03 + Math.random() * 0.02; // Radius between 0.03 and 0.05
+                const length = 0.8 + Math.random() * 0.4;
+                const radius = 0.03 + Math.random() * 0.02;
                 const branchGeometry = new THREE.CylinderGeometry(radius, radius * 0.5, length, 8);
                 const branch = new THREE.Mesh(branchGeometry, branchMaterial);
 
-                // Position and orient the branch
-                const angle = (i / branchCount) * Math.PI * 2; // Evenly spaced around the trunk
-                const tiltAngle = THREE.MathUtils.degToRad(30 + Math.random() * 30); // Tilt between 30 and 60 degrees
-                branch.position.set(0, 1.2, 0); // Start at the top of the trunk
+                const angle = (i / branchCount) * Math.PI * 2;
+                const tiltAngle = THREE.MathUtils.degToRad(30 + Math.random() * 30);
+                branch.position.set(0, 1.2, 0);
 
-                // Rotate the branch to tilt outward and upward
-                branch.rotation.z = tiltAngle; // Tilt upward
-                branch.rotation.y = angle; // Rotate around the y-axis
+                branch.rotation.z = tiltAngle;
+                branch.rotation.y = angle;
 
-                // Add a slight curve by adjusting the end position (simulate by moving the tip)
-                const curveFactor = 0.2 + Math.random() * 0.2; // Random curve amount
+                const curveFactor = 0.2 + Math.random() * 0.2;
                 branch.position.x += Math.cos(angle) * curveFactor;
                 branch.position.z += Math.sin(angle) * curveFactor;
 
@@ -287,7 +294,7 @@
             treeGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(treeGroup);
             trees.push({ group: treeGroup, branches: branches, vines: vines, vineData: vineData });
-            console.log(`Tree added at position (${pos.x}, 0, ${pos.z}) with scale ${pos.scale}`);
+            console.log(`Tree ${index} added at position (${pos.x}, 0, ${pos.z}) with scale ${pos.scale}, ${branches.length} branches`);
         });
 
         // Shrubs
@@ -381,7 +388,7 @@
             console.log(`Cactus added at position (${pos.x}, 0, ${pos.z})`);
         });
 
-        // Rock Structures (Inspired by Joshua Tree National Park)
+        // Rock Structures
         const rocks = [];
         const rockCount = 5;
         const rockPositions = [];
@@ -538,7 +545,7 @@
             console.log(`Orb added at position (${pos.x}, ${pos.y}, ${pos.z})`);
         });
 
-        // Milky Way Starfield (25,000 stars)
+        // Milky Way Starfield
         const stars = [];
         const starCount = 25000;
         const starGeometry = new THREE.BufferGeometry();
@@ -578,7 +585,7 @@
         scene.add(starField);
         console.log(`Milky Way starfield added with ${starCount} stars`);
 
-        // Distant Stars (50,000 stars)
+        // Distant Stars
         const distantStars = [];
         const distantStarCount = 50000;
         const distantStarGeometry = new THREE.BufferGeometry();
@@ -632,7 +639,6 @@
             raycaster.setFromCamera(mouse, camera);
 
             if (buildingMode) {
-                // Building mode: Check for blocks first (to shatter)
                 const blockMeshes = placedBlocks.map(block => block.mesh);
                 const intersectsBlock = raycaster.intersectObjects(blockMeshes);
 
@@ -641,11 +647,9 @@
                     const blockIndex = placedBlocks.findIndex(block => block.mesh === intersectedBlock);
 
                     if (blockIndex !== -1) {
-                        // Remove the block from the scene
                         const block = placedBlocks[blockIndex];
                         scene.remove(block.mesh);
 
-                        // Create shatter effect (similar to orb pop)
                         const burstGeometry = new THREE.BufferGeometry();
                         const burstPositions = [];
                         const burstVelocities = [];
@@ -671,14 +675,12 @@
                         burst.userData = { lifetime: 2, age: 0 };
                         scene.add(burst);
 
-                        // Remove block from placedBlocks array
                         placedBlocks.splice(blockIndex, 1);
                         console.log(`Block shattered at (${block.mesh.position.x}, ${block.mesh.position.y}, ${block.mesh.position.z})`);
                     }
                     return;
                 }
 
-                // If no block was clicked, try placing a new block on a rock
                 const rockParts = rocks.flatMap(rock => [rock.baseRock, rock.topRock]);
                 const intersectsRock = raycaster.intersectObjects(rockParts);
 
@@ -687,22 +689,18 @@
                     const point = intersect.point;
                     const normal = intersect.face.normal.clone().applyQuaternion(intersect.object.quaternion);
 
-                    // Snap position to 1-unit grid
                     const gridPos = new THREE.Vector3(
                         Math.round(point.x),
                         Math.round(point.y),
                         Math.round(point.z)
                     );
 
-                    // Offset by half the block size along the normal to place on surface
                     gridPos.add(normal.multiplyScalar(0.5));
 
-                    // Check for overlap with existing blocks
                     const positionKey = `${gridPos.x},${gridPos.y},${gridPos.z}`;
                     const isOccupied = placedBlocks.some(block => block.positionKey === positionKey);
 
                     if (!isOccupied) {
-                        // Create a new glowing block
                         const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
                         const blockMaterial = new THREE.MeshStandardMaterial({
                             color: 0x00FFFF,
@@ -715,7 +713,6 @@
                         block.position.copy(gridPos);
                         scene.add(block);
 
-                        // Store block data
                         placedBlocks.push({ mesh: block, positionKey: positionKey });
                         console.log(`Block placed at (${gridPos.x}, ${gridPos.y}, ${gridPos.z})`);
                     } else {
@@ -727,7 +724,6 @@
                 return;
             }
 
-            // Normal mode: Handle glow and orb popping
             let orbClicked = false;
             for (let i = 0; i < orbs.length; i++) {
                 const orbGroup = orbs[i];
@@ -879,14 +875,12 @@
             orbTime += 0.016;
             vineTime += 0.016;
 
-            // Animate orbs
             orbs.forEach((orb, index) => {
                 if (orb.userData.visible) {
                     orb.position.y += Math.sin(orbTime + index) * 0.01;
                 }
             });
 
-            // Animate vines (orbit around trees)
             trees.forEach(tree => {
                 const positions = tree.vines.geometry.attributes.position.array;
                 tree.vineData.forEach((data, i) => {
@@ -901,7 +895,6 @@
                 tree.vines.geometry.attributes.position.needsUpdate = true;
             });
 
-            // Animate shatter effects
             scene.children.forEach(child => {
                 if (child instanceof THREE.Points && child.userData.lifetime) {
                     child.userData.age += 0.016;
@@ -983,7 +976,7 @@
             rocks.forEach(rock => {
                 const rockBox = new THREE.Box3().setFromCenterAndSize(
                     rock.group.position,
-                    new THREE.Vector3(4 * tree.group.scale.x, 4 * tree.group.scale.y, 4 * tree.group.scale.z)
+                    new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z)
                 );
                 if (cameraBox.intersectsBox(rockBox)) {
                     const cameraDirection = new THREE.Vector3();
