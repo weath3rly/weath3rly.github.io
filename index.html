@@ -186,7 +186,7 @@
         scene.add(ground);
         console.log("Ground added to scene");
 
-        // Joshua Trees (30, Doubled Size)
+        // Joshua Trees (30, Doubled Size, with Orbiting Vines)
         const trees = [];
         const treeCount = 30;
         const treePositions = [];
@@ -215,7 +215,7 @@
             treePositions.push({ x, z, scale });
         }
 
-        treePositions.forEach((pos, index) => {
+        treePositions.forEach(pos => {
             const treeGroup = new THREE.Group();
             const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1.2, 16);
             const trunkMaterial = new THREE.MeshStandardMaterial({
@@ -236,12 +236,17 @@
             treeGroup.add(foliage);
             const vineGeometry = new THREE.BufferGeometry();
             const vinePositions = [];
+            const vineData = []; // Store data for each vine particle (theta, radius, y, speed)
+
             for (let i = 0; i < 50; i++) {
                 const theta = Math.random() * Math.PI * 2;
                 const radius = 0.4 + Math.random() * 0.2;
                 const y = 0.2 + Math.random() * 1;
+                const speed = 0.5 + Math.random() * 1.0; // Random speed between 0.5 and 1.5 radians/sec
                 vinePositions.push(Math.cos(theta) * radius, y, Math.sin(theta) * radius);
+                vineData.push({ theta, radius, y, speed });
             }
+
             vineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vinePositions, 3));
             const vineMaterial = new THREE.PointsMaterial({
                 color: 0x00FFFF,
@@ -255,8 +260,8 @@
             treeGroup.position.set(pos.x, 0, pos.z);
             treeGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(treeGroup);
-            trees.push({ group: treeGroup, foliageMaterial: foliageMaterial });
-            console.log(`Tree ${index} added at position (${pos.x}, 0, ${pos.z}) with scale ${pos.scale}`);
+            trees.push({ group: treeGroup, foliageMaterial: foliageMaterial, vines: vines, vineData: vineData });
+            console.log(`Tree added at position (${pos.x}, 0, ${pos.z}) with scale ${pos.scale}`);
         });
 
         // Shrubs
@@ -834,16 +839,37 @@
             }
         }
 
-        // Animation for Orbs and Shatter Effects
+        // Animation for Orbs, Shatter Effects, and Vines
         let orbTime = 0;
-        function animateOrbs() {
+        let vineTime = 0;
+
+        function animateOrbsAndVines() {
             orbTime += 0.016;
+            vineTime += 0.016;
+
+            // Animate orbs
             orbs.forEach((orb, index) => {
                 if (orb.userData.visible) {
                     orb.position.y += Math.sin(orbTime + index) * 0.01;
                 }
             });
 
+            // Animate vines (orbit around trees)
+            trees.forEach(tree => {
+                const positions = tree.vines.geometry.attributes.position.array;
+                tree.vineData.forEach((data, i) => {
+                    data.theta += data.speed * 0.016; // Update angle based on speed and delta time
+                    const x = data.radius * Math.cos(data.theta);
+                    const z = data.radius * Math.sin(data.theta);
+                    const y = data.y; // Keep y fixed
+                    positions[i * 3] = x;
+                    positions[i * 3 + 1] = y;
+                    positions[i * 3 + 2] = z;
+                });
+                tree.vines.geometry.attributes.position.needsUpdate = true;
+            });
+
+            // Animate shatter effects
             scene.children.forEach(child => {
                 if (child instanceof THREE.Points && child.userData.lifetime) {
                     child.userData.age += 0.016;
@@ -959,7 +985,7 @@
             updateMovement();
             checkCollisions();
             animateGlow();
-            animateOrbs();
+            animateOrbsAndVines();
             renderer.render(scene, camera);
             console.log(`Camera position: (${camera.position.x}, ${camera.position.y}, ${camera.position.z})`);
         }
