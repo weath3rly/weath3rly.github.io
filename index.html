@@ -24,9 +24,18 @@
             width: 100%;
             height: 100vh;
         }
+        #instructions {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 2;
+        }
     </style>
 </head>
 <body>
+    <div id="instructions">Click to start navigation (WASD to move, mouse to look, scroll to zoom)</div>
     <button id="toggle">Toggle Day/Night</button>
     <canvas id="canvas"></canvas>
     <!-- Placeholder audio (whispers) -->
@@ -35,7 +44,7 @@
 
     <!-- Three.js via CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/FirstPersonControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/PointerLockControls.js"></script>
 
     <script>
         // Scene Setup
@@ -46,25 +55,82 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setClearColor(0x000000, 1);
 
-        // First-Person Controls
-        const controls = new THREE.FirstPersonControls(camera, renderer.domElement);
-        controls.movementSpeed = 10;
-        controls.lookSpeed = 0.1;
-        controls.lookVertical = true;
-        controls.constrainVertical = true;
-        controls.verticalMin = 1.0;
-        controls.verticalMax = 2.0;
-        controls.activeLook = true;
-        controls.heightMin = 1.5;
-        controls.heightMax = 1.5;
-        camera.position.set(0, 1.5, 15); // Ensure camera starts above ground
+        // Custom Controls with PointerLockControls
+        const controls = new THREE.PointerLockControls(camera, document.body);
+        camera.position.set(0, 1.5, 15); // Start above ground
 
         // Zoom State
-        let isZooming = false;
         let zoomLevel = 1.0;
         const zoomSpeed = 0.1;
         const minZoom = 0.5;
         const maxZoom = 2.0;
+
+        // Movement State
+        const moveState = {
+            forward: false,
+            backward: false,
+            left: false,
+            right: false
+        };
+        const moveSpeed = 0.5; // Distance per frame when moving
+        let isMoving = false;
+
+        // Pointer Lock Setup
+        const instructions = document.getElementById('instructions');
+        instructions.addEventListener('click', () => {
+            controls.lock();
+        });
+
+        controls.addEventListener('lock', () => {
+            instructions.style.display = 'none';
+        });
+
+        controls.addEventListener('unlock', () => {
+            instructions.style.display = 'block';
+        });
+
+        // Keyboard Controls for Movement
+        document.addEventListener('keydown', (event) => {
+            switch (event.code) {
+                case 'KeyW':
+                    moveState.forward = true;
+                    isMoving = true;
+                    break;
+                case 'KeyS':
+                    moveState.backward = true;
+                    isMoving = true;
+                    break;
+                case 'KeyA':
+                    moveState.left = true;
+                    isMoving = true;
+                    break;
+                case 'KeyD':
+                    moveState.right = true;
+                    isMoving = true;
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            switch (event.code) {
+                case 'KeyW':
+                    moveState.forward = false;
+                    break;
+                case 'KeyS':
+                    moveState.backward = false;
+                    break;
+                case 'KeyA':
+                    moveState.left = false;
+                    break;
+                case 'KeyD':
+                    moveState.right = false;
+                    break;
+            }
+            // Stop moving if no movement keys are held
+            if (!moveState.forward && !moveState.backward && !moveState.left && !moveState.right) {
+                isMoving = false;
+            }
+        });
 
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
@@ -85,21 +151,21 @@
         scene.add(ground);
         console.log("Ground added to scene");
 
-        // Joshua Trees (Reduced to 30 for debugging, Doubled Size)
+        // Joshua Trees (30, Doubled Size)
         const trees = [];
-        const treeCount = 30; // Reduced from 60 to 30 for debugging
+        const treeCount = 30;
         const treePositions = [];
 
         for (let i = 0; i < treeCount; i++) {
             let x, z, validPosition = false;
             let attempts = 0;
-            while (!validPosition && attempts < 100) { // Add attempt limit to prevent infinite loop
+            while (!validPosition && attempts < 100) {
                 x = (Math.random() - 0.5) * 80;
                 z = (Math.random() - 0.5) * 80;
                 validPosition = true;
                 for (let pos of treePositions) {
                     const distance = Math.sqrt((x - pos.x) ** 2 + (z - pos.z) ** 2);
-                    if (distance < 6) { // Increased from 3 to 6 to account for larger trees
+                    if (distance < 6) {
                         validPosition = false;
                         break;
                     }
@@ -110,7 +176,7 @@
                 console.warn(`Could not place tree ${i} after 100 attempts`);
                 continue;
             }
-            const scale = 1.6 + Math.random() * 0.8; // Doubled from 0.8–1.2 to 1.6–2.4
+            const scale = 1.6 + Math.random() * 0.8;
             treePositions.push({ x, z, scale });
         }
 
@@ -406,9 +472,9 @@
             console.log(`Orb added at position (${pos.x}, ${pos.y}, ${pos.z})`);
         });
 
-        // Milky Way Starfield (Reduced to 25,000 for debugging)
+        // Milky Way Starfield (25,000 stars)
         const stars = [];
-        const starCount = 25000; // Reduced from 50,000 to 25,000 for debugging
+        const starCount = 25000;
         const starGeometry = new THREE.BufferGeometry();
         const starPositions = [];
         const starColors = [];
@@ -446,9 +512,9 @@
         scene.add(starField);
         console.log(`Milky Way starfield added with ${starCount} stars`);
 
-        // Distant Stars (Reduced to 50,000 for debugging)
+        // Distant Stars (50,000 stars)
         const distantStars = [];
-        const distantStarCount = 50000; // Reduced from 100,000 to 50,000 for debugging
+        const distantStarCount = 50000;
         const distantStarGeometry = new THREE.BufferGeometry();
         const distantStarPositions = [];
         const distantStarColors = [];
@@ -666,6 +732,38 @@
             });
         }
 
+        // Custom Movement Logic
+        function updateMovement() {
+            if (!isMoving) return;
+
+            const direction = new THREE.Vector3();
+            const cameraDirection = new THREE.Vector3();
+            camera.getWorldDirection(cameraDirection);
+            cameraDirection.y = 0; // Keep movement horizontal
+            cameraDirection.normalize();
+
+            const rightDirection = new THREE.Vector3();
+            rightDirection.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0)).normalize();
+
+            if (moveState.forward) {
+                direction.add(cameraDirection);
+            }
+            if (moveState.backward) {
+                direction.sub(cameraDirection);
+            }
+            if (moveState.left) {
+                direction.sub(rightDirection);
+            }
+            if (moveState.right) {
+                direction.add(rightDirection);
+            }
+
+            if (direction.length() > 0) {
+                direction.normalize().multiplyScalar(moveSpeed);
+                camera.position.add(direction);
+            }
+        }
+
         // Basic Collision Detection
         function checkCollisions() {
             // Keep camera above ground (y ≥ 1.5)
@@ -685,8 +783,11 @@
                     new THREE.Vector3(2 * tree.group.scale.x, 4 * tree.group.scale.y, 2 * tree.group.scale.z)
                 );
                 if (cameraBox.intersectsBox(treeBox)) {
-                    const direction = controls.object.getWorldDirection(new THREE.Vector3()).normalize();
-                    camera.position.sub(direction.multiplyScalar(0.1));
+                    const cameraDirection = new THREE.Vector3();
+                    camera.getWorldDirection(cameraDirection);
+                    cameraDirection.y = 0;
+                    cameraDirection.normalize();
+                    camera.position.sub(cameraDirection.multiplyScalar(0.1));
                     camera.position.y = 1.5;
                 }
             });
@@ -697,8 +798,11 @@
                     new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z)
                 );
                 if (cameraBox.intersectsBox(rockBox)) {
-                    const direction = controls.object.getWorldDirection(new THREE.Vector3()).normalize();
-                    camera.position.sub(direction.multiplyScalar(0.1));
+                    const cameraDirection = new THREE.Vector3();
+                    camera.getWorldDirection(cameraDirection);
+                    cameraDirection.y = 0;
+                    cameraDirection.normalize();
+                    camera.position.sub(cameraDirection.multiplyScalar(0.1));
                     camera.position.y = 1.5;
                 }
             });
@@ -707,10 +811,10 @@
         // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
+            updateMovement();
+            checkCollisions();
             animateGlow();
             animateOrbs();
-            controls.update(0.016);
-            checkCollisions();
             renderer.render(scene, camera);
             console.log(`Camera position: (${camera.position.x}, ${camera.position.y}, ${camera.position.z})`);
         }
@@ -721,7 +825,6 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            controls.handleResize();
         });
     </script>
 </body>
