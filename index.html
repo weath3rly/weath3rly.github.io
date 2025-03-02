@@ -57,7 +57,7 @@
         controls.activeLook = true;
         controls.heightMin = 1.5;
         controls.heightMax = 1.5;
-        camera.position.set(0, 1.5, 15);
+        camera.position.set(0, 1.5, 15); // Ensure camera starts above ground
 
         // Zoom State
         let isZooming = false;
@@ -83,15 +83,17 @@
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
+        console.log("Ground added to scene");
 
-        // Joshua Trees (60, Doubled Size)
+        // Joshua Trees (Reduced to 30 for debugging, Doubled Size)
         const trees = [];
-        const treeCount = 60;
+        const treeCount = 30; // Reduced from 60 to 30 for debugging
         const treePositions = [];
 
         for (let i = 0; i < treeCount; i++) {
             let x, z, validPosition = false;
-            while (!validPosition) {
+            let attempts = 0;
+            while (!validPosition && attempts < 100) { // Add attempt limit to prevent infinite loop
                 x = (Math.random() - 0.5) * 80;
                 z = (Math.random() - 0.5) * 80;
                 validPosition = true;
@@ -102,12 +104,17 @@
                         break;
                     }
                 }
+                attempts++;
+            }
+            if (!validPosition) {
+                console.warn(`Could not place tree ${i} after 100 attempts`);
+                continue;
             }
             const scale = 1.6 + Math.random() * 0.8; // Doubled from 0.8–1.2 to 1.6–2.4
             treePositions.push({ x, z, scale });
         }
 
-        treePositions.forEach(pos => {
+        treePositions.forEach((pos, index) => {
             const treeGroup = new THREE.Group();
             const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1.2, 16);
             const trunkMaterial = new THREE.MeshStandardMaterial({
@@ -148,6 +155,7 @@
             treeGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(treeGroup);
             trees.push({ group: treeGroup, foliageMaterial: foliageMaterial });
+            console.log(`Tree ${index} added at position (${pos.x}, 0, ${pos.z}) with scale ${pos.scale}`);
         });
 
         // Shrubs
@@ -190,6 +198,7 @@
             shrubGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(shrubGroup);
             shrubs.push({ group: shrubGroup, material: shrubMaterial });
+            console.log(`Shrub added at position (${pos.x}, 0, ${pos.z})`);
         });
 
         // Cacti
@@ -237,6 +246,7 @@
             cactusGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(cactusGroup);
             cacti.push({ group: cactusGroup, material: cactusMaterial });
+            console.log(`Cactus added at position (${pos.x}, 0, ${pos.z})`);
         });
 
         // Rock Structures (Inspired by Joshua Tree National Park)
@@ -246,7 +256,8 @@
 
         for (let i = 0; i < rockCount; i++) {
             let x, z, validPosition = false;
-            while (!validPosition) {
+            let attempts = 0;
+            while (!validPosition && attempts < 100) {
                 x = (Math.random() - 0.5) * 80;
                 z = (Math.random() - 0.5) * 80;
                 validPosition = true;
@@ -264,6 +275,11 @@
                         break;
                     }
                 }
+                attempts++;
+            }
+            if (!validPosition) {
+                console.warn(`Could not place rock ${i} after 100 attempts`);
+                continue;
             }
             const scale = 1.5 + Math.random() * 1.0;
             rockPositions.push({ x, z, scale });
@@ -330,7 +346,138 @@
             rockGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(rockGroup);
             rocks.push({ group: rockGroup, material: rockMaterial });
+            console.log(`Rock added at position (${pos.x}, 0, ${pos.z})`);
         });
+
+        // Floating Orbs
+        const orbs = [];
+        const orbCount = 50;
+        const orbPositions = [];
+
+        for (let i = 0; i < orbCount; i++) {
+            let x, y, z, validPosition = false;
+            while (!validPosition) {
+                x = (Math.random() - 0.5) * 80;
+                y = 1 + Math.random() * 2;
+                z = (Math.random() - 0.5) * 80;
+                validPosition = true;
+                for (let pos of orbPositions) {
+                    const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2 + (z - pos.z) ** 2);
+                    if (distance < 1.5) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+            }
+            orbPositions.push({ x, y, z });
+        }
+
+        orbPositions.forEach(pos => {
+            const orbGroup = new THREE.Group();
+            const orbGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const orbMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00FFFF,
+                transparent: true,
+                opacity: 0.8
+            });
+            const orb = new THREE.Mesh(orbGeometry, orbMaterial);
+            orbGroup.add(orb);
+            const trailGeometry = new THREE.BufferGeometry();
+            const trailPositions = [];
+            for (let i = 0; i < 20; i++) {
+                const y = -0.5 + (i / 20) * 0.5;
+                const offset = Math.random() * 0.1;
+                trailPositions.push(offset, y, offset);
+            }
+            trailGeometry.setAttribute('position', new THREE.Float32BufferAttribute(trailPositions, 3));
+            const trailMaterial = new THREE.PointsMaterial({
+                color: 0x00FFFF,
+                size: 0.05,
+                transparent: true,
+                opacity: 0.5
+            });
+            const trails = new THREE.Points(trailGeometry, trailMaterial);
+            orbGroup.add(trails);
+
+            orbGroup.position.set(pos.x, pos.y, pos.z);
+            orbGroup.userData = { visible: true };
+            scene.add(orbGroup);
+            orbs.push(orbGroup);
+            console.log(`Orb added at position (${pos.x}, ${pos.y}, ${pos.z})`);
+        });
+
+        // Milky Way Starfield (Reduced to 25,000 for debugging)
+        const stars = [];
+        const starCount = 25000; // Reduced from 50,000 to 25,000 for debugging
+        const starGeometry = new THREE.BufferGeometry();
+        const starPositions = [];
+        const starColors = [];
+
+        for (let i = 0; i < starCount; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() - 0.5) * 2);
+            const radius = 400 + Math.random() * 100;
+
+            const bandDensity = Math.sin(phi) * Math.sin(phi);
+            if (Math.random() > bandDensity) continue;
+
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.cos(phi);
+            const z = radius * Math.sin(phi) * Math.sin(theta);
+            starPositions.push(x, y, z);
+
+            const colorChoice = Math.random();
+            let color;
+            if (colorChoice < 0.6) color = new THREE.Color(0xFFFFFF);
+            else if (colorChoice < 0.8) color = new THREE.Color(0xB0C4DE);
+            else color = new THREE.Color(0xFFFFE0);
+            starColors.push(color.r, color.g, color.b);
+        }
+
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+        starGeometry.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
+        const starMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8
+        });
+        const starField = new THREE.Points(starGeometry, starMaterial);
+        scene.add(starField);
+        console.log(`Milky Way starfield added with ${starCount} stars`);
+
+        // Distant Stars (Reduced to 50,000 for debugging)
+        const distantStars = [];
+        const distantStarCount = 50000; // Reduced from 100,000 to 50,000 for debugging
+        const distantStarGeometry = new THREE.BufferGeometry();
+        const distantStarPositions = [];
+        const distantStarColors = [];
+
+        for (let i = 0; i < distantStarCount; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() - 0.5) * 2);
+            const radius = 5000;
+
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.cos(phi);
+            const z = radius * Math.sin(phi) * Math.sin(theta);
+            distantStarPositions.push(x, y, z);
+
+            const color = new THREE.Color(0xFFFFFF);
+            distantStarColors.push(color.r, color.g, color.b);
+        }
+
+        distantStarGeometry.setAttribute('position', new THREE.Float32BufferAttribute(distantStarPositions, 3));
+        distantStarGeometry.setAttribute('color', new THREE.Float32BufferAttribute(distantStarColors, 3));
+        const distantStarMaterial = new THREE.PointsMaterial({
+            size: 0.08,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.6
+        });
+        const distantStarField = new THREE.Points(distantStarGeometry, distantStarMaterial);
+        scene.add(distantStarField);
+        console.log(`Distant starfield added with ${distantStarCount} stars`);
 
         // Day/Night Toggle
         let isNight = false;
@@ -529,13 +676,13 @@
             // Basic bounding box collision with trees and rocks
             const cameraBox = new THREE.Box3().setFromCenterAndSize(
                 camera.position,
-                new THREE.Vector3(0.5, 1.5, 0.5) // Approximate camera bounding box
+                new THREE.Vector3(0.5, 1.5, 0.5)
             );
 
             trees.forEach(tree => {
                 const treeBox = new THREE.Box3().setFromCenterAndSize(
                     tree.group.position,
-                    new THREE.Vector3(2 * tree.group.scale.x, 4 * tree.group.scale.y, 2 * tree.group.scale.z) // Doubled from 1×2×1 to 2×4×2
+                    new THREE.Vector3(2 * tree.group.scale.x, 4 * tree.group.scale.y, 2 * tree.group.scale.z)
                 );
                 if (cameraBox.intersectsBox(treeBox)) {
                     const direction = controls.object.getWorldDirection(new THREE.Vector3()).normalize();
@@ -565,6 +712,7 @@
             controls.update(0.016);
             checkCollisions();
             renderer.render(scene, camera);
+            console.log(`Camera position: (${camera.position.x}, ${camera.position.y}, ${camera.position.z})`);
         }
         animate();
 
