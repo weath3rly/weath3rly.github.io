@@ -50,7 +50,7 @@
     </style>
 </head>
 <body>
-    <div id="instructions">(Arrows to move, Page Up/Down to ascend/descend in free fly mode, Click to toggle free fly mode, press B to toggle building mode)</div> <!-- Updated instructions -->
+    <div id="instructions">(WASD to move, press B to toggle building mode)</div> <!-- Restored original instructions -->
     <div id="build-notification"></div>
     <button id="toggle">Toggle Day/Night</button>
     <canvas id="canvas"></canvas>
@@ -90,14 +90,12 @@
         const minZoom = 0.5;
         const maxZoom = 2.0;
 
-        // Movement State (Added up, down for vertical movement in Free Fly Mode)
+        // Movement State (Restored WASD, removed up/down)
         const moveState = {
             forward: false,
             backward: false,
             left: false,
-            right: false,
-            up: false, // Page Up
-            down: false // Page Down
+            right: false
         };
         const moveSpeed = 0.5;
         let isMoving = false;
@@ -106,9 +104,6 @@
         let buildingMode = false;
         const placedBlocks = [];
         const maxBlocks = 50;
-
-        // Free Fly Mode State
-        let isFreeFlyMode = false; // Start in Ground Mode
 
         // Notification Element
         const buildNotification = document.getElementById('build-notification');
@@ -134,31 +129,23 @@
             instructions.style.display = 'block';
         });
 
-        // Keyboard Controls for Movement and Building Mode
+        // Keyboard Controls for Movement and Building Mode (Restored WASD)
         document.addEventListener('keydown', (event) => {
             switch (event.code) {
-                case 'ArrowUp':
+                case 'KeyW': // Restored W for forward
                     moveState.forward = true;
                     isMoving = true;
                     break;
-                case 'ArrowDown':
+                case 'KeyS': // Restored S for backward
                     moveState.backward = true;
                     isMoving = true;
                     break;
-                case 'ArrowLeft':
+                case 'KeyA': // Restored A for left
                     moveState.left = true;
                     isMoving = true;
                     break;
-                case 'ArrowRight':
+                case 'KeyD': // Restored D for right
                     moveState.right = true;
-                    isMoving = true;
-                    break;
-                case 'PageUp': // Move up (Free Fly Mode only)
-                    moveState.up = true;
-                    isMoving = true;
-                    break;
-                case 'PageDown': // Move down (Free Fly Mode only)
-                    moveState.down = true;
                     isMoving = true;
                     break;
                 case 'KeyB':
@@ -171,26 +158,20 @@
 
         document.addEventListener('keyup', (event) => {
             switch (event.code) {
-                case 'ArrowUp':
+                case 'KeyW':
                     moveState.forward = false;
                     break;
-                case 'ArrowDown':
+                case 'KeyS':
                     moveState.backward = false;
                     break;
-                case 'ArrowLeft':
+                case 'KeyA':
                     moveState.left = false;
                     break;
-                case 'ArrowRight':
+                case 'KeyD':
                     moveState.right = false;
                     break;
-                case 'PageUp':
-                    moveState.up = false;
-                    break;
-                case 'PageDown':
-                    moveState.down = false;
-                    break;
             }
-            if (!moveState.forward && !moveState.backward && !moveState.left && !moveState.right && !moveState.up && !moveState.down) {
+            if (!moveState.forward && !moveState.backward && !moveState.left && !moveState.right) {
                 isMoving = false;
             }
         });
@@ -699,7 +680,7 @@
             toggleButton.textContent = isNight ? 'Day Mode' : 'Night Mode';
         });
 
-        // Raycaster for Clicking
+        // Raycaster for Clicking (Restored original click behavior)
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         let isGlowing = false;
@@ -861,31 +842,16 @@
             }
 
             if (!orbClicked) {
-                // Toggle free fly mode
-                isFreeFlyMode = !isFreeFlyMode;
-                if (!isFreeFlyMode) {
-                    // Switching to Ground Mode: fix camera height to y=1.5
-                    camera.position.y = 1.5;
-                    controls.enabled = true;
-                    controls.lock();
-                } else {
-                    // Switching to Free Fly Mode: keep current position and enable mouse look
-                    controls.enabled = true;
-                    controls.lock();
-                }
-
-                // Glow toggle only in Ground Mode
-                if (!isFreeFlyMode) {
-                    const intersects = raycaster.intersectObject(ground);
-                    if (intersects.length > 0) {
-                        isGlowing = !isGlowing;
-                        try {
-                            const whisper = Math.random() > 0.5 ? document.getElementById('english') : document.getElementById('chinese');
-                            whisper.currentTime = 0;
-                            whisper.play().catch(e => console.error('Play error:', e));
-                        } catch (e) {
-                            console.error('Audio error:', e);
-                        }
+                // Original behavior: toggle glow when clicking the desert
+                const intersects = raycaster.intersectObject(ground);
+                if (intersects.length > 0) {
+                    isGlowing = !isGlowing;
+                    try {
+                        const whisper = Math.random() > 0.5 ? document.getElementById('english') : document.getElementById('chinese');
+                        whisper.currentTime = 0;
+                        whisper.play().catch(e => console.error('Play error:', e));
+                    } catch (e) {
+                        console.error('Audio error:', e);
                     }
                 }
             }
@@ -1001,149 +967,96 @@
             });
         }
 
-        // Custom Movement Logic (Updated for Free Fly Mode)
+        // Custom Movement Logic (Restored original x-z movement)
         function updateMovement() {
             if (!isMoving) return;
 
             const direction = new THREE.Vector3();
             const cameraDirection = new THREE.Vector3();
             camera.getWorldDirection(cameraDirection);
+            cameraDirection.y = 0; // Keep movement on x-z plane
+            cameraDirection.normalize();
 
-            if (isFreeFlyMode) {
-                // Free Fly Mode: Move in the direction the camera is facing (including y)
-                const rightDirection = new THREE.Vector3();
-                rightDirection.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0)).normalize();
+            const rightDirection = new THREE.Vector3();
+            rightDirection.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0)).normalize();
 
-                if (moveState.forward) {
-                    direction.add(cameraDirection);
-                }
-                if (moveState.backward) {
-                    direction.sub(cameraDirection);
-                }
-                if (moveState.left) {
-                    direction.sub(rightDirection);
-                }
-                if (moveState.right) {
-                    direction.add(rightDirection);
-                }
-                if (moveState.up) {
-                    camera.position.y += moveSpeed;
-                }
-                if (moveState.down) {
-                    camera.position.y -= moveSpeed;
-                }
-
-                // Apply movement
-                if (direction.length() > 0) {
-                    direction.normalize().multiplyScalar(moveSpeed);
-                    camera.position.add(direction);
-                }
-
-                // Enforce height constraints
-                if (camera.position.y < 1.5) {
-                    camera.position.y = 1.5;
-                }
-                if (camera.position.y > 50) {
-                    camera.position.y = 50;
-                }
-            } else {
-                // Ground Mode: Move on x-z plane only
-                cameraDirection.y = 0; // Ignore y component for ground movement
-                cameraDirection.normalize();
-
-                const rightDirection = new THREE.Vector3();
-                rightDirection.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0)).normalize();
-
-                if (moveState.forward) {
-                    direction.add(cameraDirection);
-                }
-                if (moveState.backward) {
-                    direction.sub(cameraDirection);
-                }
-                if (moveState.left) {
-                    direction.sub(rightDirection);
-                }
-                if (moveState.right) {
-                    direction.add(rightDirection);
-                }
-
-                // Apply movement
-                if (direction.length() > 0) {
-                    direction.normalize().multiplyScalar(moveSpeed);
-                    camera.position.add(direction);
-                }
-
-                // Enforce y=1.5 in Ground Mode
-                camera.position.y = 1.5;
+            if (moveState.forward) {
+                direction.add(cameraDirection);
             }
+            if (moveState.backward) {
+                direction.sub(cameraDirection);
+            }
+            if (moveState.left) {
+                direction.sub(rightDirection);
+            }
+            if (moveState.right) {
+                direction.add(rightDirection);
+            }
+
+            if (direction.length() > 0) {
+                direction.normalize().multiplyScalar(moveSpeed);
+                camera.position.add(direction);
+            }
+
+            // Enforce y=1.5
+            camera.position.y = 1.5;
         }
 
-        // Basic Collision Detection
+        // Basic Collision Detection (Restored original behavior)
         function checkCollisions() {
-            // Only enforce ground height and collisions in Ground Mode
-            if (!isFreeFlyMode) {
-                if (camera.position.y < 1.5) {
-                    camera.position.y = 1.5;
-                }
-
-                const cameraBox = new THREE.Box3().setFromCenterAndSize(
-                    camera.position,
-                    new THREE.Vector3(0.5, 1.5, 0.5)
-                );
-
-                trees.forEach(tree => {
-                    const treeBox = new THREE.Box3().setFromCenterAndSize(
-                        tree.group.position,
-                        new THREE.Vector3(2 * tree.group.scale.x, 5 * tree.group.scale.y, 2 * tree.group.scale.z)
-                    );
-                    if (cameraBox.intersectsBox(treeBox)) {
-                        const cameraDirection = new THREE.Vector3();
-                        camera.getWorldDirection(cameraDirection);
-                        cameraDirection.y = 0;
-                        cameraDirection.normalize();
-                        camera.position.sub(cameraDirection.multiplyScalar(0.1));
-                        camera.position.y = 1.5;
-                    }
-                });
-
-                rocks.forEach(rock => {
-                    const rockBox = new THREE.Box3().setFromCenterAndSize(
-                        rock.group.position,
-                        new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z)
-                    );
-                    if (cameraBox.intersectsBox(rockBox)) {
-                        const cameraDirection = new THREE.Vector3();
-                        camera.getWorldDirection(cameraDirection);
-                        cameraDirection.y = 0;
-                        cameraDirection.normalize();
-                        camera.position.sub(cameraDirection.multiplyScalar(0.1));
-                        camera.position.y = 1.5;
-                    }
-                });
-
-                placedBlocks.forEach(block => {
-                    const blockBox = new THREE.Box3().setFromCenterAndSize(
-                        block.mesh.position,
-                        new THREE.Vector3(1, 1, 1)
-                    );
-                    if (cameraBox.intersectsBox(blockBox)) {
-                        const cameraDirection = new THREE.Vector3();
-                        camera.getWorldDirection(cameraDirection);
-                        cameraDirection.y = 0;
-                        cameraDirection.normalize();
-                        camera.position.sub(cameraDirection.multiplyScalar(0.1));
-                        camera.position.y = 1.5;
-                    }
-                });
-            } else {
-                // In Free Fly Mode, only enforce height constraints
-                if (camera.position.y < 1.5) {
-                    camera.position.y = 1.5;
-                }
-                if (camera.position.y > 50) {
-                    camera.position.y = 50;
-                }
+            if (camera.position.y < 1.5) {
+                camera.position.y = 1.5;
             }
+
+            const cameraBox = new THREE.Box3().setFromCenterAndSize(
+                camera.position,
+                new THREE.Vector3(0.5, 1.5, 0.5)
+            );
+
+            trees.forEach(tree => {
+                const treeBox = new THREE.Box3().setFromCenterAndSize(
+                    tree.group.position,
+                    new THREE.Vector3(2 * tree.group.scale.x, 5 * tree.group.scale.y, 2 * tree.group.scale.z)
+                );
+                if (cameraBox.intersectsBox(treeBox)) {
+                    const cameraDirection = new THREE.Vector3();
+                    camera.getWorldDirection(cameraDirection);
+                    cameraDirection.y = 0;
+                    cameraDirection.normalize();
+                    camera.position.sub(cameraDirection.multiplyScalar(0.1));
+                    camera.position.y = 1.5;
+                }
+            });
+
+            rocks.forEach(rock => {
+                const rockBox = new THREE.Box3().setFromCenterAndSize(
+                    rock.group.position,
+                    new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z)
+                );
+                if (cameraBox.intersectsBox(rockBox)) {
+                    const cameraDirection = new THREE.Vector3();
+                    camera.getWorldDirection(cameraDirection);
+                    cameraDirection.y = 0;
+                    cameraDirection.normalize();
+                    camera.position.sub(cameraDirection.multiplyScalar(0.1));
+                    camera.position.y = 1.5;
+                }
+            });
+
+            placedBlocks.forEach(block => {
+                const blockBox = new THREE.Box3().setFromCenterAndSize(
+                    block.mesh.position,
+                    new THREE.Vector3(1, 1, 1)
+                );
+                if (cameraBox.intersectsBox(blockBox)) {
+                    const cameraDirection = new THREE.Vector3();
+                    camera.getWorldDirection(cameraDirection);
+                    cameraDirection.y = 0;
+                    cameraDirection.normalize();
+                    camera.position.sub(cameraDirection.multiplyScalar(0.1));
+                    camera.position.y = 1.5;
+                }
+            });
         }
 
         // Animation Loop
