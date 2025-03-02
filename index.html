@@ -82,7 +82,7 @@
         // Custom Controls with PointerLockControls
         const controls = new THREE.PointerLockControls(camera, document.body);
         camera.position.set(0, 1.5, 15);
-        camera.lookAt(0, 0, 0); // Ensure camera is looking at the scene's origin
+        camera.lookAt(0, 0, 0);
         console.log("Camera initialized at position:", camera.position);
 
         // Movement State
@@ -191,9 +191,9 @@
         scene.add(ground);
         console.log("Ground added to scene");
 
-        // Joshua Trees (Updated version with multi-trunk, reduced leaf count for performance)
+        // Joshua Trees (Reduced to 20 trees, 18–30 leaves per trunk)
         const trees = [];
-        const treeCount = 30; // Reduce to 20 if performance lags
+        const treeCount = 20; // Reduced for performance
         const treePositions = [];
 
         for (let i = 0; i < treeCount; i++) {
@@ -265,7 +265,7 @@
                 trunks.push(trunk);
             }
 
-            // Add green, spiky leaves with randomized placement in the upper portion of each trunk (reduced count)
+            // Add green, spiky leaves with randomized placement in the upper portion of each trunk
             const leaves = [];
             const leafMaterial = new THREE.MeshStandardMaterial({
                 color: 0x2E8B57,
@@ -274,9 +274,9 @@
             });
 
             trunkEnds.forEach(end => {
-                const leafCount = 18 + Math.floor(Math.random() * 13); // Reduced to 18–30 leaves per trunk
-                const topSectionHeight = end.length * 0.3; // Top 30% of the trunk
-                const startY = end.y - topSectionHeight; // Starting height for the top section
+                const leafCount = 18 + Math.floor(Math.random() * 13); // 18–30 leaves per trunk
+                const topSectionHeight = end.length * 0.3;
+                const startY = end.y - topSectionHeight;
 
                 for (let i = 0; i < leafCount; i++) {
                     const leafHeight = 0.3 + Math.random() * 0.2;
@@ -284,18 +284,13 @@
                     const leafGeometry = new THREE.ConeGeometry(leafRadius, leafHeight, 4);
                     const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
 
-                    // Randomize height within the top 30%
                     const randomY = startY + Math.random() * topSectionHeight;
-
-                    // Randomize angle around the trunk
                     const randomAngle = THREE.MathUtils.degToRad(Math.random() * 360);
                     const layerOffset = (randomY - startY) / topSectionHeight * 0.3;
                     const leafX = end.x + Math.cos(randomAngle) * layerOffset;
                     const leafZ = end.z + Math.sin(randomAngle) * layerOffset;
 
                     leaf.position.set(leafX, randomY, leafZ);
-
-                    // Orient the leaf outward with randomization
                     const leafTilt = THREE.MathUtils.degToRad(15 + Math.random() * 30);
                     leaf.rotation.z = leafTilt;
                     leaf.rotation.y = randomAngle;
@@ -425,6 +420,106 @@
             scene.add(cactusGroup);
             cacti.push({ group: cactusGroup, material: cactusMaterial });
             console.log(`Cactus added at position (${pos.x}, 0, ${pos.z})`);
+        });
+
+        // Rock Structures
+        const rocks = [];
+        const rockCount = 5;
+        const rockPositions = [];
+
+        for (let i = 0; i < rockCount; i++) {
+            let x, z, validPosition = false;
+            let attempts = 0;
+            while (!validPosition && attempts < 100) {
+                x = (Math.random() - 0.5) * 80;
+                z = (Math.random() - 0.5) * 80;
+                validPosition = true;
+                for (let pos of treePositions) {
+                    const distance = Math.sqrt((x - pos.x) ** 2 + (z - pos.z) ** 2);
+                    if (distance < 5) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+                for (let pos of rockPositions) {
+                    const distance = Math.sqrt((x - pos.x) ** 2 + (z - pos.z) ** 2);
+                    if (distance < 8) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+                attempts++;
+            }
+            if (!validPosition) {
+                console.warn(`Could not place rock ${i} after 100 attempts`);
+                continue;
+            }
+            const scale = 1.5 + Math.random() * 1.0;
+            rockPositions.push({ x, z, scale });
+        }
+
+        rockPositions.forEach(pos => {
+            const rockGroup = new THREE.Group();
+            const baseRockGeometry = new THREE.SphereGeometry(2, 8, 8);
+            const vertices = baseRockGeometry.attributes.position.array;
+            for (let i = 0; i < vertices.length; i += 3) {
+                vertices[i] += (Math.random() - 0.5) * 0.5;
+                vertices[i + 1] += (Math.random() - 0.5) * 0.5;
+                vertices[i + 2] += (Math.random() - 0.5) * 0.5;
+            }
+            baseRockGeometry.attributes.position.needsUpdate = true;
+            baseRockGeometry.computeVertexNormals();
+            const rockMaterial = new THREE.MeshStandardMaterial({
+                color: 0xD2B48C,
+                roughness: 0.9,
+                metalness: 0.1,
+                emissive: 0x00FFFF,
+                emissiveIntensity: 0
+            });
+            const baseRock = new THREE.Mesh(baseRockGeometry, rockMaterial);
+            rockGroup.add(baseRock);
+
+            const topRockGeometry = new THREE.SphereGeometry(1.2, 8, 8);
+            const topVertices = topRockGeometry.attributes.position.array;
+            for (let i = 0; i < topVertices.length; i += 3) {
+                topVertices[i] += (Math.random() - 0.5) * 0.3;
+                topVertices[i + 1] += (Math.random() - 0.5) * 0.3;
+                topVertices[i + 2] += (Math.random() - 0.5) * 0.3;
+            }
+            topRockGeometry.attributes.position.needsUpdate = true;
+            topRockGeometry.computeVertexNormals();
+            const topRock = new THREE.Mesh(topRockGeometry, rockMaterial);
+            topRock.position.set(0, 2.5, 0);
+            rockGroup.add(topRock);
+
+            const veinGeometry = new THREE.BufferGeometry();
+            const veinPositions = [];
+            for (let i = 0; i < 100; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI;
+                const radius = 1.8 + Math.random() * 0.8;
+                const y = -1.5 + Math.random() * 4.0;
+                veinPositions.push(
+                    radius * Math.sin(phi) * Math.cos(theta),
+                    y,
+                    radius * Math.sin(phi) * Math.sin(theta)
+                );
+            }
+            veinGeometry.setAttribute('position', new THREE.Float32BufferAttribute(veinPositions, 3));
+            const veinMaterial = new THREE.PointsMaterial({
+                color: 0x800080,
+                size: 0.05,
+                transparent: true,
+                opacity: 0.8
+            });
+            const veins = new THREE.Points(veinGeometry, veinMaterial);
+            rockGroup.add(veins);
+
+            rockGroup.position.set(pos.x, 0, pos.z);
+            rockGroup.scale.set(pos.scale, pos.scale, pos.scale);
+            scene.add(rockGroup);
+            rocks.push({ group: rockGroup, material: rockMaterial, baseRock: baseRock, topRock: topRock });
+            console.log(`Rock added at position (${pos.x}, 0, ${pos.z})`);
         });
 
         // Floating Orbs
@@ -891,7 +986,7 @@
             camera.position.y = 1.5;
         }
 
-        // Basic Collision Detection (Fixed typo in rock collision)
+        // Basic Collision Detection
         function checkCollisions() {
             if (camera.position.y < 1.5) {
                 camera.position.y = 1.5;
@@ -920,7 +1015,7 @@
             rocks.forEach(rock => {
                 const rockBox = new THREE.Box3().setFromCenterAndSize(
                     rock.group.position,
-                    new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z) // Fixed typo: changed 'tree' to 'rock'
+                    new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z)
                 );
                 if (cameraBox.intersectsBox(rockBox)) {
                     const cameraDirection = new THREE.Vector3();
