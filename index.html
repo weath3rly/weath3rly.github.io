@@ -196,7 +196,7 @@
         scene.add(ground);
         console.log("Ground added to scene");
 
-        // Joshua Trees (30, with Spindly Branches and Orbiting Vines)
+        // Joshua Trees (30, with Multiple Spindly Trunks and Leafy Tops)
         const trees = [];
         const treeCount = 30;
         const treePositions = [];
@@ -227,44 +227,80 @@
 
         treePositions.forEach((pos, index) => {
             const treeGroup = new THREE.Group();
-            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1.2, 16);
+
+            // Add multiple spindly trunks (previously branches)
+            const trunks = [];
+            const trunkCount = 12;
             const trunkMaterial = new THREE.MeshStandardMaterial({
-                color: 0x4A3728,
+                color: 0x4A3728, // Brown, same as old trunk
                 emissive: 0x00FFFF,
                 emissiveIntensity: 0.2
             });
-            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-            treeGroup.add(trunk);
 
-            // Add spindly branches
-            const branches = [];
-            const branchCount = 12;
-            const branchMaterial = new THREE.MeshStandardMaterial({
-                color: 0x3D5A1F,
+            const trunkEnds = []; // Store the end positions of trunks for leaf placement
+
+            for (let i = 0; i < trunkCount; i++) {
+                const length = 1.5 + Math.random() * 0.5; // Length between 1.5 and 2.0
+                const radius = 0.05 + Math.random() * 0.02; // Radius between 0.05 and 0.07
+                const trunkGeometry = new THREE.CylinderGeometry(radius, radius * 0.7, length, 8);
+                const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+
+                // Position and orient the trunk
+                const angle = (i / trunkCount) * Math.PI * 2;
+                const tiltAngle = THREE.MathUtils.degToRad(10 + Math.random() * 20); // Tilt between 10 and 30 degrees
+                const baseOffset = 0.2; // Offset trunks slightly from center
+                trunk.position.set(
+                    Math.cos(angle) * baseOffset,
+                    length / 2, // Position from ground up (center of cylinder)
+                    Math.sin(angle) * baseOffset
+                );
+
+                trunk.rotation.z = tiltAngle;
+                trunk.rotation.y = angle;
+
+                const curveFactor = 0.2 + Math.random() * 0.2;
+                trunk.position.x += Math.cos(angle) * curveFactor;
+                trunk.position.z += Math.sin(angle) * curveFactor;
+
+                // Calculate the end position of the trunk (top) for leaf placement
+                const endX = trunk.position.x + Math.cos(angle) * (length / 2) * Math.sin(tiltAngle);
+                const endY = length;
+                const endZ = trunk.position.z + Math.sin(angle) * (length / 2) * Math.sin(tiltAngle);
+                trunkEnds.push({ x: endX, y: endY, z: endZ, angle: angle });
+
+                treeGroup.add(trunk);
+                trunks.push(trunk);
+            }
+
+            // Add green, spiky leaves at the top of each trunk
+            const leaves = [];
+            const leafMaterial = new THREE.MeshStandardMaterial({
+                color: 0x2E8B57, // Vibrant green for leaves
                 emissive: 0x00FFFF,
                 emissiveIntensity: 0
             });
 
-            for (let i = 0; i < branchCount; i++) {
-                const length = 0.8 + Math.random() * 0.4;
-                const radius = 0.03 + Math.random() * 0.02;
-                const branchGeometry = new THREE.CylinderGeometry(radius, radius * 0.5, length, 8);
-                const branch = new THREE.Mesh(branchGeometry, branchMaterial);
+            trunkEnds.forEach(end => {
+                const leafCount = 5 + Math.floor(Math.random() * 3); // 5 to 7 leaves per trunk
+                for (let i = 0; i < leafCount; i++) {
+                    const leafHeight = 0.3 + Math.random() * 0.2; // Height between 0.3 and 0.5
+                    const leafRadius = 0.05; // Small base radius
+                    const leafGeometry = new THREE.ConeGeometry(leafRadius, leafHeight, 8);
+                    const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
 
-                const angle = (i / branchCount) * Math.PI * 2;
-                const tiltAngle = THREE.MathUtils.degToRad(30 + Math.random() * 30);
-                branch.position.set(0, 1.2, 0);
+                    // Position at the top of the trunk
+                    leaf.position.set(end.x, end.y, end.z);
 
-                branch.rotation.z = tiltAngle;
-                branch.rotation.y = angle;
+                    // Orient the leaf outward and slightly randomize tilt
+                    const leafAngle = end.angle + THREE.MathUtils.degToRad((Math.random() - 0.5) * 30);
+                    const leafTilt = THREE.MathUtils.degToRad(15 + Math.random() * 30); // Tilt outward 15–45 degrees
+                    leaf.rotation.z = leafTilt;
+                    leaf.rotation.y = leafAngle;
 
-                const curveFactor = 0.2 + Math.random() * 0.2;
-                branch.position.x += Math.cos(angle) * curveFactor;
-                branch.position.z += Math.sin(angle) * curveFactor;
-
-                treeGroup.add(branch);
-                branches.push(branch);
-            }
+                    treeGroup.add(leaf);
+                    leaves.push(leaf);
+                }
+            });
 
             // Vines (orbiting particles)
             const vineGeometry = new THREE.BufferGeometry();
@@ -293,8 +329,8 @@
             treeGroup.position.set(pos.x, 0, pos.z);
             treeGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(treeGroup);
-            trees.push({ group: treeGroup, branches: branches, vines: vines, vineData: vineData });
-            console.log(`Tree ${index} added at position (${pos.x}, 0, ${pos.z}) with scale ${pos.scale}, ${branches.length} branches`);
+            trees.push({ group: treeGroup, trunks: trunks, leaves: leaves, vines: vines, vineData: vineData });
+            console.log(`Tree ${index} added at position (${pos.x}, 0, ${pos.z}) with scale ${pos.scale}, ${trunks.length} trunks, ${leaves.length} leaves`);
         });
 
         // Shrubs
@@ -828,9 +864,13 @@
                 groundMaterial.emissive.setHex(currentColor);
                 groundMaterial.emissiveIntensity = 0.5;
                 trees.forEach(tree => {
-                    tree.branches.forEach(branch => {
-                        branch.material.emissive.setHex(currentColor);
-                        branch.material.emissiveIntensity = 1;
+                    tree.trunks.forEach(trunk => {
+                        trunk.material.emissive.setHex(currentColor);
+                        trunk.material.emissiveIntensity = 0.2; // Slightly dimmer for trunks
+                    });
+                    tree.leaves.forEach(leaf => {
+                        leaf.material.emissive.setHex(currentColor);
+                        leaf.material.emissiveIntensity = 1;
                     });
                     tree.vines.material.color.setHex(currentColor);
                 });
@@ -850,8 +890,11 @@
                 groundMaterial.emissive.setHex(0x00FFFF);
                 groundMaterial.emissiveIntensity = 0;
                 trees.forEach(tree => {
-                    tree.branches.forEach(branch => {
-                        branch.material.emissiveIntensity = 0;
+                    tree.trunks.forEach(trunk => {
+                        trunk.material.emissiveIntensity = 0.2; // Default emissive intensity
+                    });
+                    tree.leaves.forEach(leaf => {
+                        leaf.material.emissiveIntensity = 0;
                     });
                     tree.vines.material.color.setHex(0x00FFFF);
                 });
