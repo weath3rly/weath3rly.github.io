@@ -50,7 +50,7 @@
     </style>
 </head>
 <body>
-    <div id="instructions">(WASD to move, press B to toggle building mode)</div> <!-- Restored original instructions -->
+    <div id="instructions">(WASD to move, press B to toggle building mode)</div> <!-- Original instructions -->
     <div id="build-notification"></div>
     <button id="toggle">Toggle Day/Night</button>
     <canvas id="canvas"></canvas>
@@ -84,13 +84,7 @@
         camera.position.set(0, 1.5, 15);
         console.log("Camera initialized at position:", camera.position);
 
-        // Zoom State
-        let zoomLevel = 1.0;
-        const zoomSpeed = 0.1;
-        const minZoom = 0.5;
-        const maxZoom = 2.0;
-
-        // Movement State (Restored WASD, removed up/down)
+        // Movement State
         const moveState = {
             forward: false,
             backward: false,
@@ -129,22 +123,22 @@
             instructions.style.display = 'block';
         });
 
-        // Keyboard Controls for Movement and Building Mode (Restored WASD)
+        // Keyboard Controls for Movement and Building Mode
         document.addEventListener('keydown', (event) => {
             switch (event.code) {
-                case 'KeyW': // Restored W for forward
+                case 'KeyW':
                     moveState.forward = true;
                     isMoving = true;
                     break;
-                case 'KeyS': // Restored S for backward
+                case 'KeyS':
                     moveState.backward = true;
                     isMoving = true;
                     break;
-                case 'KeyA': // Restored A for left
+                case 'KeyA':
                     moveState.left = true;
                     isMoving = true;
                     break;
-                case 'KeyD': // Restored D for right
+                case 'KeyD':
                     moveState.right = true;
                     isMoving = true;
                     break;
@@ -176,14 +170,6 @@
             }
         });
 
-        // Zoom Controls (Mouse Wheel)
-        window.addEventListener('wheel', (event) => {
-            zoomLevel += event.deltaY * -0.01 * zoomSpeed;
-            zoomLevel = Math.min(Math.max(minZoom, zoomLevel), maxZoom);
-            camera.fov = 75 / zoomLevel;
-            camera.updateProjectionMatrix();
-        });
-
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
         scene.add(ambientLight);
@@ -204,7 +190,7 @@
         scene.add(ground);
         console.log("Ground added to scene");
 
-        // Joshua Trees (30, with Taller Spindly Trunks and Randomized Leaves)
+        // Joshua Trees (Updated version with multi-trunk and randomized leaves)
         const trees = [];
         const treeCount = 30; // Reduce to 20 if performance lags
         const treePositions = [];
@@ -680,7 +666,7 @@
             toggleButton.textContent = isNight ? 'Day Mode' : 'Night Mode';
         });
 
-        // Raycaster for Clicking (Restored original click behavior)
+        // Raycaster for Clicking
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         let isGlowing = false;
@@ -842,7 +828,6 @@
             }
 
             if (!orbClicked) {
-                // Original behavior: toggle glow when clicking the desert
                 const intersects = raycaster.intersectObject(ground);
                 if (intersects.length > 0) {
                     isGlowing = !isGlowing;
@@ -967,7 +952,7 @@
             });
         }
 
-        // Custom Movement Logic (Restored original x-z movement)
+        // Custom Movement Logic
         function updateMovement() {
             if (!isMoving) return;
 
@@ -1002,7 +987,7 @@
             camera.position.y = 1.5;
         }
 
-        // Basic Collision Detection (Restored original behavior)
+        // Basic Collision Detection
         function checkCollisions() {
             if (camera.position.y < 1.5) {
                 camera.position.y = 1.5;
@@ -1031,7 +1016,7 @@
             rocks.forEach(rock => {
                 const rockBox = new THREE.Box3().setFromCenterAndSize(
                     rock.group.position,
-                    new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z)
+                    new THREE.Vector3(4 * rock.group.scale.x, 4 * tree.group.scale.y, 4 * tree.group.scale.z)
                 );
                 if (cameraBox.intersectsBox(rockBox)) {
                     const cameraDirection = new THREE.Vector3();
