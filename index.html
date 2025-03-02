@@ -186,7 +186,7 @@
         scene.add(ground);
         console.log("Ground added to scene");
 
-        // Joshua Trees (30, Doubled Size, with Orbiting Vines)
+        // Joshua Trees (30, Doubled Size, with Spindly Branches)
         const trees = [];
         const treeCount = 30;
         const treePositions = [];
@@ -225,24 +225,50 @@
             });
             const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
             treeGroup.add(trunk);
-            const foliageGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-            const foliageMaterial = new THREE.MeshStandardMaterial({
-                color: 0x3D5A1F,
+
+            // Add spindly branches instead of spherical foliage
+            const branches = [];
+            const branchCount = 12; // Number of branches per tree
+            const branchMaterial = new THREE.MeshStandardMaterial({
+                color: 0x3D5A1F, // Same dark green as the foliage
                 emissive: 0x00FFFF,
                 emissiveIntensity: 0
             });
-            const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
-            foliage.position.set(0, 1.2, 0);
-            treeGroup.add(foliage);
+
+            for (let i = 0; i < branchCount; i++) {
+                const length = 0.8 + Math.random() * 0.4; // Length between 0.8 and 1.2
+                const radius = 0.03 + Math.random() * 0.02; // Radius between 0.03 and 0.05
+                const branchGeometry = new THREE.CylinderGeometry(radius, radius * 0.5, length, 8);
+                const branch = new THREE.Mesh(branchGeometry, branchMaterial);
+
+                // Position and orient the branch
+                const angle = (i / branchCount) * Math.PI * 2; // Evenly spaced around the trunk
+                const tiltAngle = THREE.MathUtils.degToRad(30 + Math.random() * 30); // Tilt between 30 and 60 degrees
+                branch.position.set(0, 1.2, 0); // Start at the top of the trunk
+
+                // Rotate the branch to tilt outward and upward
+                branch.rotation.z = tiltAngle; // Tilt upward
+                branch.rotation.y = angle; // Rotate around the y-axis
+
+                // Add a slight curve by adjusting the end position (simulate by moving the tip)
+                const curveFactor = 0.2 + Math.random() * 0.2; // Random curve amount
+                branch.position.x += Math.cos(angle) * curveFactor;
+                branch.position.z += Math.sin(angle) * curveFactor;
+
+                treeGroup.add(branch);
+                branches.push(branch);
+            }
+
+            // Vines (orbiting particles)
             const vineGeometry = new THREE.BufferGeometry();
             const vinePositions = [];
-            const vineData = []; // Store data for each vine particle (theta, radius, y, speed)
+            const vineData = [];
 
             for (let i = 0; i < 50; i++) {
                 const theta = Math.random() * Math.PI * 2;
                 const radius = 0.4 + Math.random() * 0.2;
                 const y = 0.2 + Math.random() * 1;
-                const speed = 0.5 + Math.random() * 1.0; // Random speed between 0.5 and 1.5 radians/sec
+                const speed = 0.5 + Math.random() * 1.0;
                 vinePositions.push(Math.cos(theta) * radius, y, Math.sin(theta) * radius);
                 vineData.push({ theta, radius, y, speed });
             }
@@ -260,7 +286,7 @@
             treeGroup.position.set(pos.x, 0, pos.z);
             treeGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(treeGroup);
-            trees.push({ group: treeGroup, foliageMaterial: foliageMaterial, vines: vines, vineData: vineData });
+            trees.push({ group: treeGroup, branches: branches, vines: vines, vineData: vineData });
             console.log(`Tree added at position (${pos.x}, 0, ${pos.z}) with scale ${pos.scale}`);
         });
 
@@ -806,8 +832,11 @@
                 groundMaterial.emissive.setHex(currentColor);
                 groundMaterial.emissiveIntensity = 0.5;
                 trees.forEach(tree => {
-                    tree.foliageMaterial.emissive.setHex(currentColor);
-                    tree.foliageMaterial.emissiveIntensity = 1;
+                    tree.branches.forEach(branch => {
+                        branch.material.emissive.setHex(currentColor);
+                        branch.material.emissiveIntensity = 1;
+                    });
+                    tree.vines.material.color.setHex(currentColor);
                 });
                 shrubs.forEach(shrub => {
                     shrub.material.emissive.setHex(currentColor);
@@ -825,7 +854,10 @@
                 groundMaterial.emissive.setHex(0x00FFFF);
                 groundMaterial.emissiveIntensity = 0;
                 trees.forEach(tree => {
-                    tree.foliageMaterial.emissiveIntensity = 0;
+                    tree.branches.forEach(branch => {
+                        branch.material.emissiveIntensity = 0;
+                    });
+                    tree.vines.material.color.setHex(0x00FFFF);
                 });
                 shrubs.forEach(shrub => {
                     shrub.material.emissiveIntensity = 0;
@@ -858,10 +890,10 @@
             trees.forEach(tree => {
                 const positions = tree.vines.geometry.attributes.position.array;
                 tree.vineData.forEach((data, i) => {
-                    data.theta += data.speed * 0.016; // Update angle based on speed and delta time
+                    data.theta += data.speed * 0.016;
                     const x = data.radius * Math.cos(data.theta);
                     const z = data.radius * Math.sin(data.theta);
-                    const y = data.y; // Keep y fixed
+                    const y = data.y;
                     positions[i * 3] = x;
                     positions[i * 3 + 1] = y;
                     positions[i * 3 + 2] = z;
@@ -951,7 +983,7 @@
             rocks.forEach(rock => {
                 const rockBox = new THREE.Box3().setFromCenterAndSize(
                     rock.group.position,
-                    new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z)
+                    new THREE.Vector3(4 * tree.group.scale.x, 4 * tree.group.scale.y, 4 * tree.group.scale.z)
                 );
                 if (cameraBox.intersectsBox(rockBox)) {
                     const cameraDirection = new THREE.Vector3();
