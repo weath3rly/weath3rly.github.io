@@ -32,10 +32,26 @@
             font-family: Arial, sans-serif;
             z-index: 2;
         }
+        #build-notification {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 2s ease-out;
+        }
+        #build-notification.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <div id="instructions">Click to start navigation (WASD to move, mouse to look, scroll to zoom, press B to toggle building mode, click rocks to place blocks)</div>
+    <div id="instructions">Click to start navigation (WASD to move, mouse to look, scroll to zoom, press B to toggle building mode, click rocks to place blocks, click blocks to shatter)</div>
+    <div id="build-notification"></div>
     <button id="toggle">Toggle Day/Night</button>
     <canvas id="canvas"></canvas>
     <!-- Placeholder audio (whispers) -->
@@ -78,7 +94,17 @@
         // Building Mode State
         let buildingMode = false;
         const placedBlocks = [];
-        const maxBlocks = 50; // Limit to 50 blocks to avoid performance issues
+        const maxBlocks = 50;
+
+        // Notification Element
+        const buildNotification = document.getElementById('build-notification');
+
+        function showNotification(message) {
+            buildNotification.textContent = message;
+            buildNotification.classList.remove('show');
+            void buildNotification.offsetWidth; // Trigger reflow to restart animation
+            buildNotification.classList.add('show');
+        }
 
         // Pointer Lock Setup
         const instructions = document.getElementById('instructions');
@@ -115,6 +141,7 @@
                     break;
                 case 'KeyB':
                     buildingMode = !buildingMode;
+                    showNotification(`Building Mode ${buildingMode ? 'Enabled' : 'Disabled'}`);
                     console.log(`Building mode: ${buildingMode ? 'ON' : 'OFF'}`);
                     break;
             }
@@ -574,7 +601,53 @@
             raycaster.setFromCamera(mouse, camera);
 
             if (buildingMode) {
-                // Building mode: Place blocks on rocks
+                // Building mode: Check for blocks first (to shatter)
+                const blockMeshes = placedBlocks.map(block => block.mesh);
+                const intersectsBlock = raycaster.intersectObjects(blockMeshes);
+
+                if (intersectsBlock.length > 0) {
+                    const intersectedBlock = intersectsBlock[0].object;
+                    const blockIndex = placedBlocks.findIndex(block => block.mesh === intersectedBlock);
+
+                    if (blockIndex !== -1) {
+                        // Remove the block from the scene
+                        const block = placedBlocks[blockIndex];
+                        scene.remove(block.mesh);
+
+                        // Create shatter effect (similar to orb pop)
+                        const burstGeometry = new THREE.BufferGeometry();
+                        const burstPositions = [];
+                        const burstVelocities = [];
+                        for (let j = 0; j < 30; j++) {
+                            const theta = Math.random() * Math.PI * 2;
+                            const phi = Math.random() * Math.PI;
+                            const radius = 0.5;
+                            const x = radius * Math.sin(phi) * Math.cos(theta);
+                            const y = radius * Math.sin(phi) * Math.sin(theta);
+                            const z = radius * Math.cos(phi);
+                            burstPositions.push(block.mesh.position.x + x, block.mesh.position.y + y, block.mesh.position.z + z);
+                            burstVelocities.push(x * 0.05, y * 0.05, z * 0.05);
+                        }
+                        burstGeometry.setAttribute('position', new THREE.Float32BufferAttribute(burstPositions, 3));
+                        burstGeometry.setAttribute('velocity', new THREE.Float32BufferAttribute(burstVelocities, 3));
+                        const burstMaterial = new THREE.PointsMaterial({
+                            color: 0x00FFFF,
+                            size: 0.05,
+                            transparent: true,
+                            opacity: 0.8
+                        });
+                        const burst = new THREE.Points(burstGeometry, burstMaterial);
+                        burst.userData = { lifetime: 2, age: 0 };
+                        scene.add(burst);
+
+                        // Remove block from placedBlocks array
+                        placedBlocks.splice(blockIndex, 1);
+                        console.log(`Block shattered at (${block.mesh.position.x}, ${block.mesh.position.y}, ${block.mesh.position.z})`);
+                    }
+                    return;
+                }
+
+                // If no block was clicked, try placing a new block on a rock
                 const rockParts = rocks.flatMap(rock => [rock.baseRock, rock.topRock]);
                 const intersectsRock = raycaster.intersectObjects(rockParts);
 
@@ -761,7 +834,7 @@
             }
         }
 
-        // Animation for Orbs
+        // Animation for Orbs and Shatter Effects
         let orbTime = 0;
         function animateOrbs() {
             orbTime += 0.016;
@@ -864,7 +937,6 @@
                 }
             });
 
-            // Collision with placed blocks
             placedBlocks.forEach(block => {
                 const blockBox = new THREE.Box3().setFromCenterAndSize(
                     block.mesh.position,
