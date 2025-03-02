@@ -71,9 +71,9 @@
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // Joshua Trees (30 from base code)
+        // Joshua Trees - Increased to 60
         const trees = [];
-        const treeCount = 60;
+        const treeCount = 60; // Updated from 30 to 60
         const treePositions = [];
 
         for (let i = 0; i < treeCount; i++) {
@@ -226,6 +226,102 @@
             cacti.push({ group: cactusGroup, material: cactusMaterial });
         });
 
+        // Rock Structures (Inspired by Joshua Tree National Park)
+        const rocks = [];
+        const rockCount = 5;
+        const rockPositions = [];
+
+        for (let i = 0; i < rockCount; i++) {
+            let x, z, validPosition = false;
+            while (!validPosition) {
+                x = (Math.random() - 0.5) * 80;
+                z = (Math.random() - 0.5) * 80;
+                validPosition = true;
+                for (let pos of treePositions) {
+                    const distance = Math.sqrt((x - pos.x) ** 2 + (z - pos.z) ** 2);
+                    if (distance < 5) { // Increased distance to avoid overlap with trees
+                        validPosition = false;
+                        break;
+                    }
+                }
+                for (let pos of rockPositions) {
+                    const distance = Math.sqrt((x - pos.x) ** 2 + (z - pos.z) ** 2);
+                    if (distance < 8) { // Rocks need more space
+                        validPosition = false;
+                        break;
+                    }
+                }
+            }
+            const scale = 1.5 + Math.random() * 1.0; // Larger scale for rocks
+            rockPositions.push({ x, z, scale });
+        }
+
+        rockPositions.forEach(pos => {
+            const rockGroup = new THREE.Group();
+            // Base Rock (Distorted Sphere)
+            const baseRockGeometry = new THREE.SphereGeometry(2, 8, 8);
+            const vertices = baseRockGeometry.attributes.position.array;
+            for (let i = 0; i < vertices.length; i += 3) {
+                vertices[i] += (Math.random() - 0.5) * 0.5; // Add roughness
+                vertices[i + 1] += (Math.random() - 0.5) * 0.5;
+                vertices[i + 2] += (Math.random() - 0.5) * 0.5;
+            }
+            baseRockGeometry.attributes.position.needsUpdate = true;
+            baseRockGeometry.computeVertexNormals();
+            const rockMaterial = new THREE.MeshStandardMaterial({
+                color: 0xD2B48C, // Tan color for Joshua Tree rocks
+                roughness: 0.9,
+                metalness: 0.1,
+                emissive: 0x00FFFF,
+                emissiveIntensity: 0
+            });
+            const baseRock = new THREE.Mesh(baseRockGeometry, rockMaterial);
+            rockGroup.add(baseRock);
+
+            // Top Rock (Smaller, Stacked)
+            const topRockGeometry = new THREE.SphereGeometry(1.2, 8, 8);
+            const topVertices = topRockGeometry.attributes.position.array;
+            for (let i = 0; i < topVertices.length; i += 3) {
+                topVertices[i] += (Math.random() - 0.5) * 0.3; // Add roughness
+                topVertices[i + 1] += (Math.random() - 0.5) * 0.3;
+                topVertices[i + 2] += (Math.random() - 0.5) * 0.3;
+            }
+            topRockGeometry.attributes.position.needsUpdate = true;
+            topRockGeometry.computeVertexNormals();
+            const topRock = new THREE.Mesh(topRockGeometry, rockMaterial);
+            topRock.position.set(0, 2.5, 0);
+            rockGroup.add(topRock);
+
+            // Glowing Veins (Points)
+            const veinGeometry = new THREE.BufferGeometry();
+            const veinPositions = [];
+            for (let i = 0; i < 100; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI;
+                const radius = 1.8 + Math.random() * 0.8; // Wrap around the rock
+                const y = -1.5 + Math.random() * 4.0; // Cover height of base and top rock
+                veinPositions.push(
+                    radius * Math.sin(phi) * Math.cos(theta),
+                    y,
+                    radius * Math.sin(phi) * Math.sin(theta)
+                );
+            }
+            veinGeometry.setAttribute('position', new THREE.Float32BufferAttribute(veinPositions, 3));
+            const veinMaterial = new THREE.PointsMaterial({
+                color: 0x800080, // Purple veins to match shrubs
+                size: 0.05,
+                transparent: true,
+                opacity: 0.8
+            });
+            const veins = new THREE.Points(veinGeometry, veinMaterial);
+            rockGroup.add(veins);
+
+            rockGroup.position.set(pos.x, 0, pos.z);
+            rockGroup.scale.set(pos.scale, pos.scale, pos.scale);
+            scene.add(rockGroup);
+            rocks.push({ group: rockGroup, material: rockMaterial });
+        });
+
         // Floating Orbs
         const orbs = [];
         const orbCount = 50;
@@ -321,7 +417,7 @@
         const starField = new THREE.Points(starGeometry, starMaterial);
         scene.add(starField);
 
-        // Distant Stars (White Specks) - 100,000, Halved Size
+        // Distant Stars (White Specks) - 100,000
         const distantStars = [];
         const distantStarCount = 100000;
         const distantStarGeometry = new THREE.BufferGeometry();
@@ -345,7 +441,7 @@
         distantStarGeometry.setAttribute('position', new THREE.Float32BufferAttribute(distantStarPositions, 3));
         distantStarGeometry.setAttribute('color', new THREE.Float32BufferAttribute(distantStarColors, 3));
         const distantStarMaterial = new THREE.PointsMaterial({
-            size: 0.08, // Halved size: 0.16 to 0.08
+            size: 0.08,
             vertexColors: true,
             transparent: true,
             opacity: 0.6
@@ -358,6 +454,7 @@
         const toggleButton = document.getElementById('toggle');
         toggleButton.addEventListener('click', () => {
             isNight = !isNight;
+            document.body.classList.toggle('night');
             directionalLight.color.set(isNight ? 0x1A1A4D : 0xFF4500);
             toggleButton.textContent = isNight ? 'Day Mode' : 'Night Mode';
         });
@@ -479,6 +576,10 @@
                     cactus.material.emissive.setHex(currentColor);
                     cactus.material.emissiveIntensity = 1;
                 });
+                rocks.forEach(rock => {
+                    rock.material.emissive.setHex(currentColor);
+                    rock.material.emissiveIntensity = 0.5;
+                });
             } else {
                 groundMaterial.emissive.setHex(0x00FFFF);
                 groundMaterial.emissiveIntensity = 0;
@@ -491,10 +592,13 @@
                 cacti.forEach(cactus => {
                     cactus.material.emissiveIntensity = 0;
                 });
+                rocks.forEach(rock => {
+                    rock.material.emissiveIntensity = 0;
+                });
             }
         }
 
-        // Floating Animation for Orbs and Burst Animation
+        // Floating Animation for Orbs
         let orbTime = 0;
         function animateOrbs() {
             orbTime += 0.016;
