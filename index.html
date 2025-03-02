@@ -35,7 +35,7 @@
     </style>
 </head>
 <body>
-    <div id="instructions">Click to start navigation (WASD to move, mouse to look, scroll to zoom)</div>
+    <div id="instructions">Click to start navigation (WASD to move, mouse to look, scroll to zoom, double-click to look east/west)</div>
     <button id="toggle">Toggle Day/Night</button>
     <canvas id="canvas"></canvas>
     <!-- Placeholder audio (whispers) -->
@@ -57,7 +57,7 @@
 
         // Custom Controls with PointerLockControls
         const controls = new THREE.PointerLockControls(camera, document.body);
-        camera.position.set(0, 1.5, 15); // Start above ground
+        camera.position.set(0, 1.5, 15);
 
         // Zoom State
         let zoomLevel = 1.0;
@@ -72,8 +72,16 @@
             left: false,
             right: false
         };
-        const moveSpeed = 0.5; // Distance per frame when moving
+        const moveSpeed = 0.5;
         let isMoving = false;
+
+        // Double-Click State for East/West Rotation
+        let lastLookDirection = 'west'; // Start with west
+        let isRotating = false;
+        let targetYaw = 0;
+        let currentYaw = 0;
+        let rotationStartTime = 0;
+        const rotationDuration = 0.5; // 0.5 seconds for smooth rotation
 
         // Pointer Lock Setup
         const instructions = document.getElementById('instructions');
@@ -126,9 +134,21 @@
                     moveState.right = false;
                     break;
             }
-            // Stop moving if no movement keys are held
             if (!moveState.forward && !moveState.backward && !moveState.left && !moveState.right) {
                 isMoving = false;
+            }
+        });
+
+        // Double-Click to Look East/West
+        document.addEventListener('dblclick', () => {
+            if (controls.isLocked) {
+                isRotating = true;
+                rotationStartTime = Date.now() / 1000; // Current time in seconds
+                currentYaw = controls.getObject().rotation.y;
+
+                // Toggle between east (90 degrees) and west (-90 degrees)
+                lastLookDirection = lastLookDirection === 'east' ? 'west' : 'east';
+                targetYaw = lastLookDirection === 'east' ? Math.PI / 2 : -Math.PI / 2; // East: 90 degrees, West: -90 degrees
             }
         });
 
@@ -739,7 +759,7 @@
             const direction = new THREE.Vector3();
             const cameraDirection = new THREE.Vector3();
             camera.getWorldDirection(cameraDirection);
-            cameraDirection.y = 0; // Keep movement horizontal
+            cameraDirection.y = 0;
             cameraDirection.normalize();
 
             const rightDirection = new THREE.Vector3();
@@ -764,14 +784,29 @@
             }
         }
 
+        // Smooth Rotation for Double-Click East/West
+        function updateRotation() {
+            if (!isRotating) return;
+
+            const currentTime = Date.now() / 1000;
+            const elapsed = currentTime - rotationStartTime;
+            const t = Math.min(elapsed / rotationDuration, 1); // Progress (0 to 1)
+
+            // Linearly interpolate between currentYaw and targetYaw
+            const newYaw = currentYaw + (targetYaw - currentYaw) * t;
+            controls.getObject().rotation.y = newYaw;
+
+            if (t >= 1) {
+                isRotating = false;
+            }
+        }
+
         // Basic Collision Detection
         function checkCollisions() {
-            // Keep camera above ground (y ≥ 1.5)
             if (camera.position.y < 1.5) {
                 camera.position.y = 1.5;
             }
 
-            // Basic bounding box collision with trees and rocks
             const cameraBox = new THREE.Box3().setFromCenterAndSize(
                 camera.position,
                 new THREE.Vector3(0.5, 1.5, 0.5)
@@ -812,6 +847,7 @@
         function animate() {
             requestAnimationFrame(animate);
             updateMovement();
+            updateRotation();
             checkCollisions();
             animateGlow();
             animateOrbs();
