@@ -35,7 +35,7 @@
 
     <!-- Three.js via CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/FirstPersonControls.js"></script>
 
     <script>
         // Scene Setup
@@ -46,12 +46,27 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setClearColor(0x000000, 1);
 
-        // Camera Controls
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        camera.position.set(0, 5, 15);
-        controls.minDistance = 5;
-        controls.maxDistance = 5000;
-        controls.update();
+        // First-Person Controls
+        const controls = new THREE.FirstPersonControls(camera, renderer.domElement);
+        controls.movementSpeed = 10; // Walking speed
+        controls.lookSpeed = 0.1; // Mouse look sensitivity
+        controls.lookVertical = true; // Allow looking up/down
+        controls.constrainVertical = true; // Limit vertical look angle
+        controls.verticalMin = 1.0; // Min vertical look angle (radians)
+        controls.verticalMax = 2.0; // Max vertical look angle (radians)
+        controls.activeLook = true; // Enable mouse look
+        controls.heightMin = 1.5; // Minimum camera height (standing height)
+        controls.heightMax = 1.5; // Maximum camera height (no jumping for now)
+
+        // Set initial camera position (standing on ground)
+        camera.position.set(0, 1.5, 15); // Height 1.5 units above ground
+
+        // Zoom State
+        let isZooming = false;
+        let zoomLevel = 1.0; // Default zoom (no zoom)
+        const zoomSpeed = 0.1;
+        const minZoom = 0.5;
+        const maxZoom = 2.0;
 
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
@@ -316,115 +331,7 @@
             rockGroup.position.set(pos.x, 0, pos.z);
             rockGroup.scale.set(pos.scale, pos.scale, pos.scale);
             scene.add(rockGroup);
-            rocks.push({ group: rockGroup, material: rockMaterial, baseRock: baseRock, topRock: topRock });
-        });
-
-        // Luminescent Lizards (3 per rock, 15 total, crawling ON surface, lime green)
-        const lizards = [];
-        const lizardsPerRock = 3;
-        const lizardRaycaster = new THREE.Raycaster();
-
-        rocks.forEach(rock => {
-            const rockPos = rock.group.position;
-            const rockScale = rock.group.scale.x;
-            const rockParts = [rock.baseRock, rock.topRock]; // Raycast against both base and top rock
-
-            for (let i = 0; i < lizardsPerRock; i++) {
-                const lizardGroup = new THREE.Group();
-                // Lizard Body
-                const bodyGeometry = new THREE.BoxGeometry(0.4, 0.08, 0.16);
-                const lizardMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x32CD32, // Lime green
-                    emissive: 0x00FFFF,
-                    emissiveIntensity: 0
-                });
-                const body = new THREE.Mesh(bodyGeometry, lizardMaterial);
-                lizardGroup.add(body);
-
-                // Lizard Legs
-                const legGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.08);
-                const leg1 = new THREE.Mesh(legGeometry, lizardMaterial);
-                leg1.position.set(0.16, -0.08, 0.12);
-                lizardGroup.add(leg1);
-                const leg2 = new THREE.Mesh(legGeometry, lizardMaterial);
-                leg2.position.set(0.16, -0.08, -0.12);
-                lizardGroup.add(leg2);
-                const leg3 = new THREE.Mesh(legGeometry, lizardMaterial);
-                leg3.position.set(-0.16, -0.08, 0.12);
-                lizardGroup.add(leg3);
-                const leg4 = new THREE.Mesh(legGeometry, lizardMaterial);
-                leg4.position.set(-0.16, -0.08, -0.12);
-                lizardGroup.add(leg4);
-
-                // Lizard Tail
-                const tailGeometry = new THREE.BoxGeometry(0.24, 0.04, 0.04);
-                const tail = new THREE.Mesh(tailGeometry, lizardMaterial);
-                tail.position.set(-0.32, 0, 0);
-                lizardGroup.add(tail);
-
-                // Glowing Spots
-                const spotGeometry = new THREE.BufferGeometry();
-                const spotPositions = [];
-                for (let j = 0; j < 10; j++) {
-                    const x = -0.24 + (j / 10) * 0.48;
-                    const y = 0.048;
-                    const z = (Math.random() - 0.5) * 0.08;
-                    spotPositions.push(x, y, z);
-                }
-                spotGeometry.setAttribute('position', new THREE.Float32BufferAttribute(spotPositions, 3));
-                const spotMaterial = new THREE.PointsMaterial({
-                    color: 0x00FFFF,
-                    size: 0.024,
-                    transparent: true,
-                    opacity: 0.8
-                });
-                const spots = new THREE.Points(spotGeometry, spotMaterial);
-                lizardGroup.add(spots);
-
-                // Initial Positioning on Rock (Raycast to Surface)
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.random() > 0.5 ? Math.PI / 2 : Math.acos(2.5 / (2 * rockScale));
-                const rockRadius = phi === Math.PI / 2 ? 2 * rockScale : 1.2 * rockScale;
-                const direction = new THREE.Vector3(
-                    Math.sin(phi) * Math.cos(theta),
-                    Math.cos(phi),
-                    Math.sin(phi) * Math.sin(theta)
-                ).normalize();
-                lizardRaycaster.set(rockPos, direction);
-                const intersects = lizardRaycaster.intersectObjects(rockParts);
-                let positionOnRock = new THREE.Vector3();
-                let normalOnRock = new THREE.Vector3();
-
-                if (intersects.length > 0) {
-                    positionOnRock = intersects[0].point;
-                    normalOnRock = intersects[0].face.normal.clone().applyQuaternion(rockParts[intersects[0].object === rock.baseRock ? 0 : 1].quaternion);
-                } else {
-                    // Fallback to spherical approximation if raycast fails
-                    const radius = rockRadius + 0.04;
-                    positionOnRock.set(
-                        rockPos.x + radius * Math.sin(phi) * Math.cos(theta),
-                        rockPos.y + radius * Math.cos(phi),
-                        rockPos.z + radius * Math.sin(phi) * Math.sin(theta)
-                    );
-                    normalOnRock = positionOnRock.clone().sub(rockPos).normalize();
-                }
-
-                lizardGroup.position.copy(positionOnRock);
-                lizardGroup.up = normalOnRock;
-                lizardGroup.lookAt(rockPos);
-                lizardGroup.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2);
-
-                rock.group.add(lizardGroup);
-                lizards.push({
-                    group: lizardGroup,
-                    material: lizardMaterial,
-                    theta: theta,
-                    phi: phi,
-                    speed: 0.5 + Math.random() * 0.5,
-                    rockParts: rockParts,
-                    rockPos: rockPos
-                });
-            }
+            rocks.push({ group: rockGroup, material: rockMaterial });
         });
 
         // Floating Orbs
@@ -654,6 +561,14 @@
             }
         });
 
+        // Zoom Controls (Mouse Wheel)
+        window.addEventListener('wheel', (event) => {
+            zoomLevel += event.deltaY * -0.01 * zoomSpeed;
+            zoomLevel = Math.min(Math.max(minZoom, zoomLevel), maxZoom);
+            camera.fov = 75 / zoomLevel;
+            camera.updateProjectionMatrix();
+        });
+
         // Glow Animation
         let glowTime = 0;
         let glowIndex = 0;
@@ -685,10 +600,6 @@
                     rock.material.emissive.setHex(currentColor);
                     rock.material.emissiveIntensity = 0.5;
                 });
-                lizards.forEach(lizard => {
-                    lizard.material.emissive.setHex(currentColor);
-                    lizard.material.emissiveIntensity = 1;
-                });
             } else {
                 groundMaterial.emissive.setHex(0x00FFFF);
                 groundMaterial.emissiveIntensity = 0;
@@ -704,49 +615,16 @@
                 rocks.forEach(rock => {
                     rock.material.emissiveIntensity = 0;
                 });
-                lizards.forEach(lizard => {
-                    lizard.material.emissiveIntensity = 0;
-                });
             }
         }
 
-        // Animation for Orbs and Lizards
+        // Animation for Orbs
         let orbTime = 0;
-        let lizardTime = 0;
-        function animateOrbsAndLizards() {
+        function animateOrbs() {
             orbTime += 0.016;
-            lizardTime += 0.016;
             orbs.forEach((orb, index) => {
                 if (orb.userData.visible) {
                     orb.position.y += Math.sin(orbTime + index) * 0.01;
-                }
-            });
-
-            // Lizard Crawling Animation (Raycast to Surface)
-            lizards.forEach((lizard, index) => {
-                lizard.theta += 0.02 * lizard.speed; // Move theta for horizontal crawling
-                const direction = new THREE.Vector3(
-                    Math.sin(lizard.phi) * Math.cos(lizard.theta),
-                    Math.cos(lizard.phi),
-                    Math.sin(lizard.phi) * Math.sin(lizard.theta)
-                ).normalize();
-                lizardRaycaster.set(lizard.rockPos, direction);
-                const intersects = lizardRaycaster.intersectObjects(lizard.rockParts);
-
-                if (intersects.length > 0) {
-                    const positionOnRock = intersects[0].point;
-                    const normalOnRock = intersects[0].face.normal.clone().applyQuaternion(
-                        lizard.rockParts[intersects[0].object === lizard.rockParts[0] ? 0 : 1].quaternion
-                    );
-                    // Add small offset along normal to prevent sinking into rock
-                    lizard.group.position.copy(positionOnRock).add(normalOnRock.clone().multiplyScalar(0.04)); // Lizard height/2
-                    lizard.group.up = normalOnRock;
-                    lizard.group.lookAt(lizard.rockPos);
-                    lizard.group.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2); // Orient to crawl along theta direction
-
-                    // Add a slight waddle effect
-                    const waddle = Math.sin(lizardTime * 5 * lizard.speed) * 0.1;
-                    lizard.group.rotateOnAxis(new THREE.Vector3(0, 1, 0), waddle);
                 }
             });
 
@@ -770,12 +648,52 @@
             });
         }
 
+        // Basic Collision Detection
+        function checkCollisions() {
+            // Keep camera above ground (y ≥ 1.5)
+            if (camera.position.y < 1.5) {
+                camera.position.y = 1.5;
+            }
+
+            // Basic bounding box collision with trees and rocks
+            const cameraBox = new THREE.Box3().setFromCenterAndSize(
+                camera.position,
+                new THREE.Vector3(0.5, 1.5, 0.5) // Approximate camera bounding box
+            );
+
+            trees.forEach(tree => {
+                const treeBox = new THREE.Box3().setFromCenterAndSize(
+                    tree.group.position,
+                    new THREE.Vector3(1 * tree.group.scale.x, 2 * tree.group.scale.y, 1 * tree.group.scale.z) // Approximate tree bounding box
+                );
+                if (cameraBox.intersectsBox(treeBox)) {
+                    // Simple push-back (move camera back in the opposite direction of movement)
+                    const direction = controls.object.getWorldDirection(new THREE.Vector3()).normalize();
+                    camera.position.sub(direction.multiplyScalar(0.1));
+                    camera.position.y = 1.5; // Keep height fixed
+                }
+            });
+
+            rocks.forEach(rock => {
+                const rockBox = new THREE.Box3().setFromCenterAndSize(
+                    rock.group.position,
+                    new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z) // Approximate rock bounding box
+                );
+                if (cameraBox.intersectsBox(rockBox)) {
+                    const direction = controls.object.getWorldDirection(new THREE.Vector3()).normalize();
+                    camera.position.sub(direction.multiplyScalar(0.1));
+                    camera.position.y = 1.5;
+                }
+            });
+        }
+
         // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
             animateGlow();
-            animateOrbsAndLizards();
-            controls.update();
+            animateOrbs();
+            controls.update(0.016); // Update FirstPersonControls (delta time)
+            checkCollisions(); // Apply collision detection
             renderer.render(scene, camera);
         }
         animate();
@@ -785,6 +703,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            controls.handleResize();
         });
     </script>
 </body>
