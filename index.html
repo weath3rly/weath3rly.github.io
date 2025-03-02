@@ -71,7 +71,7 @@
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // Joshua Trees (60 from updated base code)
+        // Joshua Trees (60 from base code)
         const trees = [];
         const treeCount = 60;
         const treePositions = [];
@@ -319,70 +319,71 @@
             rocks.push({ group: rockGroup, material: rockMaterial });
         });
 
-        // Luminescent Lizards (3 per rock, 15 total)
+        // Luminescent Lizards (3 per rock, 15 total, smaller and crawling on surface)
         const lizards = [];
         const lizardsPerRock = 3;
 
         rocks.forEach(rock => {
             const rockPos = rock.group.position;
-            const rockScale = rock.group.scale.x; // Use the rock's scale to adjust lizard positioning
+            const rockScale = rock.group.scale.x;
 
             for (let i = 0; i < lizardsPerRock; i++) {
                 const lizardGroup = new THREE.Group();
-                // Lizard Body
-                const bodyGeometry = new THREE.BoxGeometry(0.5, 0.1, 0.2);
+                // Lizard Body (20% smaller)
+                const bodyGeometry = new THREE.BoxGeometry(0.4, 0.08, 0.16); // Was 0.5×0.1×0.2
                 const lizardMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x4A4A4A, // Dark gray base
+                    color: 0x4A4A4A,
                     emissive: 0x00FFFF,
                     emissiveIntensity: 0
                 });
                 const body = new THREE.Mesh(bodyGeometry, lizardMaterial);
                 lizardGroup.add(body);
 
-                // Lizard Legs (4 small boxes)
-                const legGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+                // Lizard Legs (20% smaller)
+                const legGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.08); // Was 0.1×0.1×0.1
                 const leg1 = new THREE.Mesh(legGeometry, lizardMaterial);
-                leg1.position.set(0.2, -0.1, 0.15);
+                leg1.position.set(0.16, -0.08, 0.12); // Adjusted for smaller body
                 lizardGroup.add(leg1);
                 const leg2 = new THREE.Mesh(legGeometry, lizardMaterial);
-                leg2.position.set(0.2, -0.1, -0.15);
+                leg2.position.set(0.16, -0.08, -0.12);
                 lizardGroup.add(leg2);
                 const leg3 = new THREE.Mesh(legGeometry, lizardMaterial);
-                leg3.position.set(-0.2, -0.1, 0.15);
+                leg3.position.set(-0.16, -0.08, 0.12);
                 lizardGroup.add(leg3);
                 const leg4 = new THREE.Mesh(legGeometry, lizardMaterial);
-                leg4.position.set(-0.2, -0.1, -0.15);
+                leg4.position.set(-0.16, -0.08, -0.12);
                 lizardGroup.add(leg4);
 
-                // Lizard Tail
-                const tailGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.05);
+                // Lizard Tail (20% smaller)
+                const tailGeometry = new THREE.BoxGeometry(0.24, 0.04, 0.04); // Was 0.3×0.05×0.05
                 const tail = new THREE.Mesh(tailGeometry, lizardMaterial);
-                tail.position.set(-0.4, 0, 0);
+                tail.position.set(-0.32, 0, 0); // Adjusted for smaller body
                 lizardGroup.add(tail);
 
-                // Glowing Spots (Points)
+                // Glowing Spots (20% smaller)
                 const spotGeometry = new THREE.BufferGeometry();
                 const spotPositions = [];
                 for (let j = 0; j < 10; j++) {
-                    const x = -0.3 + (j / 10) * 0.6; // Along the body and tail
-                    const y = 0.06; // Slightly above surface
-                    const z = (Math.random() - 0.5) * 0.1; // Small lateral offset
+                    const x = -0.24 + (j / 10) * 0.48; // Adjusted for smaller body
+                    const y = 0.048; // Slightly above surface
+                    const z = (Math.random() - 0.5) * 0.08; // Adjusted for smaller width
                     spotPositions.push(x, y, z);
                 }
                 spotGeometry.setAttribute('position', new THREE.Float32BufferAttribute(spotPositions, 3));
                 const spotMaterial = new THREE.PointsMaterial({
-                    color: 0x00FFFF, // Cyan to match trees
-                    size: 0.03,
+                    color: 0x00FFFF,
+                    size: 0.024, // Was 0.03
                     transparent: true,
                     opacity: 0.8
                 });
                 const spots = new THREE.Points(spotGeometry, spotMaterial);
                 lizardGroup.add(spots);
 
-                // Positioning on Rock
+                // Positioning on Rock (Fixed phi for crawling on surface)
                 const theta = Math.random() * Math.PI * 2;
-                const phi = Math.random() * Math.PI;
-                const radius = 2 * rockScale; // Approximate rock radius (base rock radius 2, scaled)
+                const phi = Math.random() > 0.5 ? Math.PI / 2 : Math.acos(2.5 / (2 * rockScale)); // Either on base (phi = PI/2) or top (y = 2.5)
+                const rockRadius = phi === Math.PI / 2 ? 2 * rockScale : 1.2 * rockScale; // Base rock radius = 2, top rock radius = 1.2
+                const radius = rockRadius + 0.08; // Offset by lizard height to sit on surface
                 const xOffset = radius * Math.sin(phi) * Math.cos(theta);
                 const yOffset = radius * Math.cos(phi);
                 const zOffset = radius * Math.sin(phi) * Math.sin(theta);
@@ -391,16 +392,16 @@
                 // Align lizard to rock surface
                 const normal = new THREE.Vector3(xOffset, yOffset, zOffset).normalize();
                 lizardGroup.up = normal;
-                lizardGroup.lookAt(rockPos); // Face inward toward rock center
-                lizardGroup.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.random() * Math.PI * 2); // Random rotation around normal
+                lizardGroup.lookAt(rockPos);
+                lizardGroup.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2); // Orient to crawl along theta direction
 
                 rock.group.add(lizardGroup);
                 lizards.push({
                     group: lizardGroup,
                     material: lizardMaterial,
-                    theta: theta, // For crawling animation
-                    phi: phi,
-                    speed: 0.5 + Math.random() * 0.5, // Random speed for variation
+                    theta: theta,
+                    phi: phi, // Fixed phi to keep lizard on surface
+                    speed: 0.5 + Math.random() * 0.5,
                     radius: radius
                 });
             }
@@ -701,11 +702,12 @@
                 }
             });
 
-            // Lizard Crawling Animation
+            // Lizard Crawling Animation (Fixed to Surface)
             lizards.forEach((lizard, index) => {
-                const rockPos = lizard.group.parent.position; // Rock position
-                lizard.theta += 0.02 * lizard.speed; // Move theta for crawling
-                lizard.phi += 0.01 * lizard.speed; // Move phi for vertical variation
+                const rockPos = lizard.group.parent.position;
+                lizard.theta += 0.02 * lizard.speed; // Move theta for horizontal crawling
+
+                // Use fixed phi to keep lizard on surface
                 const x = lizard.radius * Math.sin(lizard.phi) * Math.cos(lizard.theta);
                 const y = lizard.radius * Math.cos(lizard.phi);
                 const z = lizard.radius * Math.sin(lizard.phi) * Math.sin(lizard.theta);
@@ -715,6 +717,7 @@
                 const normal = new THREE.Vector3(x, y, z).normalize();
                 lizard.group.up = normal;
                 lizard.group.lookAt(rockPos);
+                lizard.group.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2); // Orient to crawl along theta direction
 
                 // Add a slight waddle effect
                 const waddle = Math.sin(lizardTime * 5 * lizard.speed) * 0.1;
