@@ -50,7 +50,7 @@
     </style>
 </head>
 <body>
-    <div id="instructions">(WASD to move, press B to toggle building mode)</div>
+    <div id="instructions">(Arrows to move, press B to toggle building mode)</div> <!-- Updated instructions -->
     <div id="build-notification"></div>
     <button id="toggle">Toggle Day/Night</button>
     <canvas id="canvas"></canvas>
@@ -129,22 +129,22 @@
             instructions.style.display = 'block';
         });
 
-        // Keyboard Controls for Movement and Building Mode
+        // Keyboard Controls for Movement and Building Mode (Changed WASD to Arrow Keys)
         document.addEventListener('keydown', (event) => {
             switch (event.code) {
-                case 'KeyW':
+                case 'ArrowUp': // Previously KeyW
                     moveState.forward = true;
                     isMoving = true;
                     break;
-                case 'KeyS':
+                case 'ArrowDown': // Previously KeyS
                     moveState.backward = true;
                     isMoving = true;
                     break;
-                case 'KeyA':
+                case 'ArrowLeft': // Previously KeyA
                     moveState.left = true;
                     isMoving = true;
                     break;
-                case 'KeyD':
+                case 'ArrowRight': // Previously KeyD
                     moveState.right = true;
                     isMoving = true;
                     break;
@@ -158,16 +158,16 @@
 
         document.addEventListener('keyup', (event) => {
             switch (event.code) {
-                case 'KeyW':
+                case 'ArrowUp': // Previously KeyW
                     moveState.forward = false;
                     break;
-                case 'KeyS':
+                case 'ArrowDown': // Previously KeyS
                     moveState.backward = false;
                     break;
-                case 'KeyA':
+                case 'ArrowLeft': // Previously KeyA
                     moveState.left = false;
                     break;
-                case 'KeyD':
+                case 'ArrowRight': // Previously KeyD
                     moveState.right = false;
                     break;
             }
@@ -294,7 +294,7 @@
 
                     // Randomize angle around the trunk
                     const randomAngle = THREE.MathUtils.degToRad(Math.random() * 360);
-                    const layerOffset = (randomY - startY) / topSectionHeight * 0.3; // Slight radial expansion as we go up
+                    const layerOffset = (randomY - startY) / topSectionHeight * 0.3;
                     const leafX = end.x + Math.cos(randomAngle) * layerOffset;
                     const leafZ = end.z + Math.sin(randomAngle) * layerOffset;
 
