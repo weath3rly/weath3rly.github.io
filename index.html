@@ -50,7 +50,7 @@
     </style>
 </head>
 <body>
-    <div id="instructions">(Arrows to move, Page Up/Down to ascend/descend, Scroll to zoom, press B to toggle building mode)</div> <!-- Updated instructions -->
+    <div id="instructions">(Arrows to move, Click to toggle bird's-eye view, press B to toggle building mode)</div> <!-- Updated instructions -->
     <div id="build-notification"></div>
     <button id="toggle">Toggle Day/Night</button>
     <canvas id="canvas"></canvas>
@@ -84,22 +84,18 @@
         camera.position.set(0, 1.5, 15);
         console.log("Camera initialized at position:", camera.position);
 
-        // Zoom State for FOV Adjustment
+        // Zoom State
         let zoomLevel = 1.0;
         const zoomSpeed = 0.1;
         const minZoom = 0.5;
         const maxZoom = 2.0;
 
-        // Movement State (Added up, down, in, out for 3D movement)
+        // Movement State
         const moveState = {
             forward: false,
             backward: false,
             left: false,
-            right: false,
-            up: false, // For Page Up
-            down: false, // For Page Down
-            in: false, // For scroll zoom in
-            out: false // For scroll zoom out
+            right: false
         };
         const moveSpeed = 0.5;
         let isMoving = false;
@@ -108,6 +104,11 @@
         let buildingMode = false;
         const placedBlocks = [];
         const maxBlocks = 50;
+
+        // Bird's-Eye View State
+        let isBirdsEyeView = false; // Start in Ground View
+        let storedPosition = new THREE.Vector3(0, 1.5, 15); // Store initial position
+        let storedRotation = new THREE.Vector3(0, 0, 0); // Store initial rotation
 
         // Notification Element
         const buildNotification = document.getElementById('build-notification');
@@ -122,7 +123,9 @@
         // Pointer Lock Setup
         const instructions = document.getElementById('instructions');
         instructions.addEventListener('click', () => {
-            controls.lock();
+            if (!isBirdsEyeView) {
+                controls.lock();
+            }
         });
 
         controls.addEventListener('lock', () => {
@@ -133,7 +136,7 @@
             instructions.style.display = 'block';
         });
 
-        // Keyboard Controls for Movement, FOV, and Building Mode (Added Page Up/Down and +/- for FOV)
+        // Keyboard Controls for Movement and Building Mode
         document.addEventListener('keydown', (event) => {
             switch (event.code) {
                 case 'ArrowUp':
@@ -151,24 +154,6 @@
                 case 'ArrowRight':
                     moveState.right = true;
                     isMoving = true;
-                    break;
-                case 'PageUp': // Move up (ascend)
-                    moveState.up = true;
-                    isMoving = true;
-                    break;
-                case 'PageDown': // Move down (descend)
-                    moveState.down = true;
-                    isMoving = true;
-                    break;
-                case 'Equal': // '+' key to zoom in (decrease FOV)
-                    zoomLevel = Math.max(minZoom, zoomLevel - zoomSpeed);
-                    camera.fov = 75 / zoomLevel;
-                    camera.updateProjectionMatrix();
-                    break;
-                case 'Minus': // '-' key to zoom out (increase FOV)
-                    zoomLevel = Math.min(maxZoom, zoomLevel + zoomSpeed);
-                    camera.fov = 75 / zoomLevel;
-                    camera.updateProjectionMatrix();
                     break;
                 case 'KeyB':
                     buildingMode = !buildingMode;
@@ -192,26 +177,18 @@
                 case 'ArrowRight':
                     moveState.right = false;
                     break;
-                case 'PageUp':
-                    moveState.up = false;
-                    break;
-                case 'PageDown':
-                    moveState.down = false;
-                    break;
             }
-            if (!moveState.forward && !moveState.backward && !moveState.left && !moveState.right && !moveState.up && !moveState.down) {
+            if (!moveState.forward && !moveState.backward && !moveState.left && !moveState.right) {
                 isMoving = false;
             }
         });
 
-        // Scroll Wheel for Zoom (Now moves camera closer/farther)
+        // Zoom Controls (Mouse Wheel)
         window.addEventListener('wheel', (event) => {
-            const zoomAmount = event.deltaY * 0.05; // Adjust sensitivity
-            const cameraDirection = new THREE.Vector3();
-            camera.getWorldDirection(cameraDirection);
-            cameraDirection.y = 0; // Keep movement horizontal for zooming
-            cameraDirection.normalize();
-            camera.position.add(cameraDirection.multiplyScalar(-zoomAmount));
+            zoomLevel += event.deltaY * -0.01 * zoomSpeed;
+            zoomLevel = Math.min(Math.max(minZoom, zoomLevel), maxZoom);
+            camera.fov = 75 / zoomLevel;
+            camera.updateProjectionMatrix();
         });
 
         // Lighting
@@ -872,18 +849,53 @@
             }
 
             if (!orbClicked) {
-                const intersects = raycaster.intersectObject(ground);
-                if (intersects.length > 0) {
-                    isGlowing = !isGlowing;
-                    try {
-                        const whisper = Math.random() > 0.5 ? document.getElementById('english') : document.getElementById('chinese');
-                        whisper.currentTime = 0;
-                        whisper.play().catch(e => console.error('Play error:', e));
-                    } catch (e) {
-                        console.error('Audio error:', e);
+                // Toggle bird's-eye view
+                isBirdsEyeView = !isBirdsEyeView;
+                if (isBirdsEyeView) {
+                    // Store current position and rotation
+                    storedPosition.copy(camera.position);
+                    storedRotation.copy(camera.rotation);
+
+                    // Move to bird's-eye view
+                    camera.position.set(0, 50, 0); // Centered above the scene at y=50
+                    camera.rotation.set(-Math.PI / 2, 0, 0); // Look straight down
+
+                    // Disable PointerLockControls to lock the camera angle
+                    controls.unlock();
+                    controls.enabled = false;
+                } else {
+                    // Restore ground view
+                    camera.position.copy(storedPosition);
+                    camera.rotation.copy(storedRotation);
+
+                    // Re-enable PointerLockControls
+                    controls.enabled = true;
+                    controls.lock();
+                }
+
+                // Glow toggle only in Ground View
+                if (!isBirdsEyeView) {
+                    const intersects = raycaster.intersectObject(ground);
+                    if (intersects.length > 0) {
+                        isGlowing = !isGlowing;
+                        try {
+                            const whisper = Math.random() > 0.5 ? document.getElementById('english') : document.getElementById('chinese');
+                            whisper.currentTime = 0;
+                            whisper.play().catch(e => console.error('Play error:', e));
+                        } catch (e) {
+                            console.error('Audio error:', e);
+                        }
                     }
                 }
             }
+        });
+
+        // Zoom Controls (Mouse Wheel)
+        window.addEventListener('wheel', (event) => {
+            zoomLevel += event.deltaY * -0.01 * zoomSpeed;
+            zoomLevel = Math.min(Math.max(minZoom, zoomLevel), maxZoom);
+            camera.fov = 75 / zoomLevel;
+            camera.updateProjectionMatrix();
         });
 
         // Glow Animation
@@ -996,20 +1008,19 @@
             });
         }
 
-        // Custom Movement Logic (Updated for 3D Movement)
+        // Custom Movement Logic
         function updateMovement() {
             if (!isMoving) return;
 
             const direction = new THREE.Vector3();
             const cameraDirection = new THREE.Vector3();
             camera.getWorldDirection(cameraDirection);
-            cameraDirection.y = 0; // Keep horizontal movement on x-z plane
+            cameraDirection.y = 0; // Keep movement on x-z plane
             cameraDirection.normalize();
 
             const rightDirection = new THREE.Vector3();
             rightDirection.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0)).normalize();
 
-            // Horizontal movement (x-z plane)
             if (moveState.forward) {
                 direction.add(cameraDirection);
             }
@@ -1023,34 +1034,22 @@
                 direction.add(rightDirection);
             }
 
-            // Vertical movement (y-axis)
-            if (moveState.up) {
-                camera.position.y += moveSpeed;
-            }
-            if (moveState.down) {
-                camera.position.y -= moveSpeed;
-            }
-
-            // Apply horizontal movement
             if (direction.length() > 0) {
                 direction.normalize().multiplyScalar(moveSpeed);
                 camera.position.add(direction);
             }
 
-            // Enforce height constraints
-            if (camera.position.y < 1.5) {
-                camera.position.y = 1.5; // Prevent going below ground
-            }
-            if (camera.position.y > 50) {
-                camera.position.y = 50; // Prevent going too high
+            // In Ground View, enforce y=1.5
+            if (!isBirdsEyeView && camera.position.y !== 1.5) {
+                camera.position.y = 1.5;
             }
         }
 
-        // Basic Collision Detection (Updated to Remove Fixed Height)
+        // Basic Collision Detection
         function checkCollisions() {
-            // Removed camera.position.y = 1.5 to allow free vertical movement
-            if (camera.position.y < 1.5) {
-                camera.position.y = 1.5; // Still prevent going below ground
+            // Only enforce ground height in Ground View
+            if (!isBirdsEyeView && camera.position.y < 1.5) {
+                camera.position.y = 1.5;
             }
 
             const cameraBox = new THREE.Box3().setFromCenterAndSize(
@@ -1069,7 +1068,7 @@
                     cameraDirection.y = 0;
                     cameraDirection.normalize();
                     camera.position.sub(cameraDirection.multiplyScalar(0.1));
-                    if (camera.position.y < 1.5) {
+                    if (!isBirdsEyeView && camera.position.y < 1.5) {
                         camera.position.y = 1.5;
                     }
                 }
@@ -1086,7 +1085,7 @@
                     cameraDirection.y = 0;
                     cameraDirection.normalize();
                     camera.position.sub(cameraDirection.multiplyScalar(0.1));
-                    if (camera.position.y < 1.5) {
+                    if (!isBirdsEyeView && camera.position.y < 1.5) {
                         camera.position.y = 1.5;
                     }
                 }
@@ -1103,7 +1102,7 @@
                     cameraDirection.y = 0;
                     cameraDirection.normalize();
                     camera.position.sub(cameraDirection.multiplyScalar(0.1));
-                    if (camera.position.y < 1.5) {
+                    if (!isBirdsEyeView && camera.position.y < 1.5) {
                         camera.position.y = 1.5;
                     }
                 }
