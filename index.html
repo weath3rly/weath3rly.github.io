@@ -1,1067 +1,237 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Joshua Unraveled Lite</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abrasive Edge - Premium Sanding Abrasives</title>
     <style>
-        body {
+        * {
             margin: 0;
-            overflow: hidden;
-            background: #000000; /* Black sky for both day and night */
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
-        #toggle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 10px;
-            background: #4A3728;
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+        }
+
+        nav {
+            margin-top: 0.5rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+            font-size: 1rem;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .product-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #e9ecef;
+        }
+
+        .product-info {
+            padding: 1rem;
+        }
+
+        .product-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-info p {
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-info .price {
+            font-size: 1.1rem;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .add-to-cart {
+            background-color: #2c3e50;
             color: white;
             border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
             cursor: pointer;
-            font-family: Arial, sans-serif;
-            z-index: 2;
+            transition: background-color 0.2s;
         }
-        #canvas {
-            width: 100%;
-            height: 100vh;
+
+        .add-to-cart:hover {
+            background-color: #34495e;
         }
-        #instructions {
-            position: absolute;
-            top: 10px;
-            left: 10px;
+
+        /* Footer */
+        footer {
+            background-color: #2c3e50;
             color: white;
-            font-family: Arial, sans-serif;
-            z-index: 2;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
         }
-        #build-notification {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            font-family: Arial, sans-serif;
-            z-index: 2;
-            opacity: 0;
-            transition: opacity 2s ease-out;
-        }
-        #build-notification.show {
-            opacity: 1;
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .products {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.2rem;
+            }
+
+            nav a {
+                margin: 0 0.5rem;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="instructions">(WASD to move, press B to toggle building mode)</div>
-    <div id="build-notification"></div>
-    <button id="toggle">Toggle Day/Night</button>
-    <canvas id="canvas"></canvas>
-    <!-- Placeholder audio (whispers) -->
-    <audio id="english" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/09-32-18-637_1.mp3"></audio>
-    <audio id="chinese" preload="auto" src="https://cdn.pixabay.com/audio/2023/03/27/04-23-24-867_1.mp3"></audio>
+    <header>
+        <h1>Abrasive Edge</h1>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#shop">Shop</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+            <a href="#cart">Cart (0)</a>
+        </nav>
+    </header>
 
-    <!-- Three.js via CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/PointerLockControls.js"></script>
+    <div class="main-content">
+        <h2>Welcome to Abrasive Edge - Premium Sanding Solutions</h2>
+        <p>Discover our high-quality sanding sponges and discs designed for professionals and DIY enthusiasts. Shop now for the best in abrasive technology!</p>
+        
+        <div class="products" id="product-list">
+            <!-- Product cards will be added dynamically by JavaScript -->
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Abrasive Edge. All rights reserved. | Contact: info@abrasiveedge.com</p>
+    </footer>
 
     <script>
-        // Scene Setup
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setClearColor(0x000000, 1);
-
-        // Debugging: Check if renderer context is created
-        try {
-            renderer.getContext();
-            console.log("WebGL context created successfully");
-        } catch (e) {
-            console.error("Failed to create WebGL context:", e);
-        }
-
-        // Custom Controls with PointerLockControls
-        const controls = new THREE.PointerLockControls(camera, document.body);
-        camera.position.set(0, 1.5, 15);
-        camera.lookAt(0, 0, 0);
-        console.log("Camera initialized at position:", camera.position);
-
-        // Movement State
-        const moveState = {
-            forward: false,
-            backward: false,
-            left: false,
-            right: false
-        };
-        const moveSpeed = 0.5;
-        let isMoving = false;
-
-        // Building Mode State
-        let buildingMode = false;
-        const placedBlocks = [];
-        const maxBlocks = 50;
-
-        // Notification Element
-        const buildNotification = document.getElementById('build-notification');
-
-        function showNotification(message) {
-            buildNotification.textContent = message;
-            buildNotification.classList.remove('show');
-            void buildNotification.offsetWidth;
-            buildNotification.classList.add('show');
-        }
-
-        // Pointer Lock Setup
-        const instructions = document.getElementById('instructions');
-        instructions.addEventListener('click', () => {
-            controls.lock();
-        });
-
-        controls.addEventListener('lock', () => {
-            instructions.style.display = 'none';
-        });
-
-        controls.addEventListener('unlock', () => {
-            instructions.style.display = 'block';
-        });
-
-        // Keyboard Controls for Movement and Building Mode
-        document.addEventListener('keydown', (event) => {
-            switch (event.code) {
-                case 'KeyW':
-                    moveState.forward = true;
-                    isMoving = true;
-                    break;
-                case 'KeyS':
-                    moveState.backward = true;
-                    isMoving = true;
-                    break;
-                case 'KeyA':
-                    moveState.left = true;
-                    isMoving = true;
-                    break;
-                case 'KeyD':
-                    moveState.right = true;
-                    isMoving = true;
-                    break;
-                case 'KeyB':
-                    buildingMode = !buildingMode;
-                    showNotification(`(Building Mode ${buildingMode ? 'ON' : 'OFF'})`);
-                    console.log(`Building mode: ${buildingMode ? 'ON' : 'OFF'}`);
-                    break;
+        // Sample product data
+        const products = [
+            {
+                id: 1,
+                name: "Premium Sanding Sponge - Fine Grit",
+                price: 4.99,
+                image: "https://via.placeholder.com/250x200?text=Sanding+Sponge"
+            },
+            {
+                id: 2,
+                name: "Heavy-Duty Sanding Disc - 120 Grit",
+                price: 2.99,
+                image: "https://via.placeholder.com/250x200?text=Sanding+Disc"
+            },
+            {
+                id: 3,
+                name: "Multi-Grain Sanding Sponge - Medium Grit",
+                price: 5.49,
+                image: "https://via.placeholder.com/250x200?text=Sanding+Sponge"
+            },
+            {
+                id: 4,
+                name: "Industrial Sanding Disc - 80 Grit",
+                price: 3.49,
+                image: "https://via.placeholder.com/250x200?text=Sanding+Disc"
             }
-        });
-
-        document.addEventListener('keyup', (event) => {
-            switch (event.code) {
-                case 'KeyW':
-                    moveState.forward = false;
-                    break;
-                case 'KeyS':
-                    moveState.backward = false;
-                    break;
-                case 'KeyA':
-                    moveState.left = false;
-                    break;
-                case 'KeyD':
-                    moveState.right = false;
-                    break;
-            }
-            if (!moveState.forward && !moveState.backward && !moveState.left && !moveState.right) {
-                isMoving = false;
-            }
-        });
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xFF4500, 1);
-        directionalLight.position.set(5, 10, 5);
-        scene.add(directionalLight);
-        console.log("Lighting added to scene");
-
-        // Desert Ground
-        const groundGeometry = new THREE.PlaneGeometry(100, 100);
-        const groundMaterial = new THREE.MeshStandardMaterial({
-            color: 0x8B5A2B,
-            roughness: 0.8,
-            metalness: 0.2
-        });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-        ground.rotation.x = -Math.PI / 2;
-        scene.add(ground);
-        console.log("Ground added to scene");
-
-        // Joshua Trees (Reduced to 20 trees, 18–30 leaves per trunk)
-        const trees = [];
-        const treeCount = 20; // Reduced for performance
-        const treePositions = [];
-
-        for (let i = 0; i < treeCount; i++) {
-            let x, z, validPosition = false;
-            let attempts = 0;
-            while (!validPosition && attempts < 100) {
-                x = (Math.random() - 0.5) * 80;
-                z = (Math.random() - 0.5) * 80;
-                validPosition = true;
-                for (let pos of treePositions) {
-                    const distance = Math.sqrt((x - pos.x) ** 2 + (z - pos.z) ** 2);
-                    if (distance < 6) {
-                        validPosition = false;
-                        break;
-                    }
-                }
-                attempts++;
-            }
-            if (!validPosition) {
-                console.warn(`Could not place tree ${i} after 100 attempts`);
-                continue;
-            }
-            const scale = 1.6 + Math.random() * 0.8;
-            treePositions.push({ x, z, scale });
-        }
-
-        treePositions.forEach((pos, index) => {
-            const treeGroup = new THREE.Group();
-
-            // Add multiple spindly trunks
-            const trunks = [];
-            const trunkCount = 12;
-            const trunkMaterial = new THREE.MeshStandardMaterial({
-                color: 0x4A3728,
-                emissive: 0x00FFFF,
-                emissiveIntensity: 0.2
-            });
-
-            const trunkEnds = [];
-
-            for (let i = 0; i < trunkCount; i++) {
-                const length = 2.0 + Math.random() * 1.0;
-                const radius = 0.05 + Math.random() * 0.02;
-                const trunkGeometry = new THREE.CylinderGeometry(radius, radius * 0.7, length, 8);
-                const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-
-                const angle = (i / trunkCount) * Math.PI * 2;
-                const tiltAngle = THREE.MathUtils.degToRad(10 + Math.random() * 20);
-                const baseOffset = 0.2;
-                trunk.position.set(
-                    Math.cos(angle) * baseOffset,
-                    length / 2,
-                    Math.sin(angle) * baseOffset
-                );
-
-                trunk.rotation.z = tiltAngle;
-                trunk.rotation.y = angle;
-
-                const curveFactor = 0.2 + Math.random() * 0.2;
-                trunk.position.x += Math.cos(angle) * curveFactor;
-                trunk.position.z += Math.sin(angle) * curveFactor;
-
-                const endX = trunk.position.x + Math.cos(angle) * (length / 2) * Math.sin(tiltAngle);
-                const endY = length;
-                const endZ = trunk.position.z + Math.sin(angle) * (length / 2) * Math.sin(tiltAngle);
-                trunkEnds.push({ x: endX, y: endY, z: endZ, angle: angle, length: length });
-
-                treeGroup.add(trunk);
-                trunks.push(trunk);
-            }
-
-            // Add green, spiky leaves with randomized placement in the upper portion of each trunk
-            const leaves = [];
-            const leafMaterial = new THREE.MeshStandardMaterial({
-                color: 0x2E8B57,
-                emissive: 0x00FFFF,
-                emissiveIntensity: 0
-            });
-
-            trunkEnds.forEach(end => {
-                const leafCount = 18 + Math.floor(Math.random() * 13); // 18–30 leaves per trunk
-                const topSectionHeight = end.length * 0.3;
-                const startY = end.y - topSectionHeight;
-
-                for (let i = 0; i < leafCount; i++) {
-                    const leafHeight = 0.3 + Math.random() * 0.2;
-                    const leafRadius = 0.05;
-                    const leafGeometry = new THREE.ConeGeometry(leafRadius, leafHeight, 4);
-                    const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
-
-                    const randomY = startY + Math.random() * topSectionHeight;
-                    const randomAngle = THREE.MathUtils.degToRad(Math.random() * 360);
-                    const layerOffset = (randomY - startY) / topSectionHeight * 0.3;
-                    const leafX = end.x + Math.cos(randomAngle) * layerOffset;
-                    const leafZ = end.z + Math.sin(randomAngle) * layerOffset;
-
-                    leaf.position.set(leafX, randomY, leafZ);
-                    const leafTilt = THREE.MathUtils.degToRad(15 + Math.random() * 30);
-                    leaf.rotation.z = leafTilt;
-                    leaf.rotation.y = randomAngle;
-
-                    treeGroup.add(leaf);
-                    leaves.push(leaf);
-                }
-            });
-
-            // Vines (orbiting particles)
-            const vineGeometry = new THREE.BufferGeometry();
-            const vinePositions = [];
-            const vineData = [];
-
-            for (let i = 0; i < 50; i++) {
-                const theta = Math.random() * Math.PI * 2;
-                const radius = 0.4 + Math.random() * 0.2;
-                const y = 0.2 + Math.random() * 1;
-                const speed = 0.5 + Math.random() * 1.0;
-                vinePositions.push(Math.cos(theta) * radius, y, Math.sin(theta) * radius);
-                vineData.push({ theta, radius, y, speed });
-            }
-
-            vineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vinePositions, 3));
-            const vineMaterial = new THREE.PointsMaterial({
-                color: 0x00FFFF,
-                size: 0.05,
-                transparent: true,
-                opacity: 0.8
-            });
-            const vines = new THREE.Points(vineGeometry, vineMaterial);
-            treeGroup.add(vines);
-
-            treeGroup.position.set(pos.x, 0, pos.z);
-            treeGroup.scale.set(pos.scale, pos.scale, pos.scale);
-            scene.add(treeGroup);
-            trees.push({ group: treeGroup, trunks: trunks, leaves: leaves, vines: vines, vineData: vineData });
-            console.log(`Tree ${index} added at position (${pos.x}, 0, ${pos.z}) with scale ${pos.scale}, ${trunks.length} trunks, ${leaves.length} leaves`);
-        });
-
-        // Shrubs
-        const shrubs = [];
-        const shrubPositions = [
-            { x: -5, z: -5, scale: 1 },
-            { x: 7, z: -2, scale: 0.7 },
-            { x: -4, z: 2, scale: 0.9 }
         ];
 
-        shrubPositions.forEach(pos => {
-            const shrubGroup = new THREE.Group();
-            const shrubGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-            const shrubMaterial = new THREE.MeshStandardMaterial({
-                color: 0x3D5A1F,
-                emissive: 0x800080,
-                emissiveIntensity: 0
-            });
-            const shrub = new THREE.Mesh(shrubGeometry, shrubMaterial);
-            shrubGroup.add(shrub);
-            const tendrilGeometry = new THREE.BufferGeometry();
-            const tendrilPositions = [];
-            for (let i = 0; i < 30; i++) {
-                const theta = Math.random() * Math.PI * 2;
-                const radius = 0.2 + Math.random() * 0.1;
-                const y = 0.1 + Math.random() * 0.2;
-                tendrilPositions.push(Math.cos(theta) * radius, y, Math.sin(theta) * radius);
-            }
-            tendrilGeometry.setAttribute('position', new THREE.Float32BufferAttribute(tendrilPositions, 3));
-            const tendrilMaterial = new THREE.PointsMaterial({
-                color: 0x800080,
-                size: 0.03,
-                transparent: true,
-                opacity: 0.8
-            });
-            const tendrils = new THREE.Points(tendrilGeometry, tendrilMaterial);
-            shrubGroup.add(tendrils);
-
-            shrubGroup.position.set(pos.x, 0, pos.z);
-            shrubGroup.scale.set(pos.scale, pos.scale, pos.scale);
-            scene.add(shrubGroup);
-            shrubs.push({ group: shrubGroup, material: shrubMaterial });
-            console.log(`Shrub added at position (${pos.x}, 0, ${pos.z})`);
+        // Load products into the DOM
+        const productList = document.getElementById('product-list');
+        products.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            productCard.innerHTML = `
+                <img src="${product.image}" alt="${product.name}" class="product-image">
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <p>High-quality abrasive for smooth finishes.</p>
+                    <p class="price">$${product.price.toFixed(2)}</p>
+                    <button class="add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                </div>
+            `;
+            productList.appendChild(productCard);
         });
 
-        // Cacti
-        const cacti = [];
-        const cactusPositions = [
-            { x: -3.5, z: 5, scale: 1 },
-            { x: 6.5, z: -1.2, scale: 0.8 },
-            { x: -4.5, z: -1.5, scale: 1.1 }
-        ];
+        // Cart functionality
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        cactusPositions.forEach(pos => {
-            const cactusGroup = new THREE.Group();
-            const trunkGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1, 16);
-            const cactusMaterial = new THREE.MeshStandardMaterial({
-                color: 0x355E3B,
-                emissive: 0x0000FF,
-                emissiveIntensity: 0
-            });
-            const trunk = new THREE.Mesh(trunkGeometry, cactusMaterial);
-            cactusGroup.add(trunk);
-            const armGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.6, 16);
-            const arm = new THREE.Mesh(armGeometry, cactusMaterial);
-            arm.position.set(0, 0.8, 0);
-            arm.rotation.y = Math.PI / 4;
-            cactusGroup.add(arm);
-            const tendrilGeometry = new THREE.BufferGeometry();
-            const tendrilPositions = [];
-            for (let i = 0; i < 30; i++) {
-                const theta = Math.random() * Math.PI * 2;
-                const radius = 0.2 + Math.random() * 0.1;
-                const y = 0.1 + Math.random() * 0.8;
-                tendrilPositions.push(Math.cos(theta) * radius, y, Math.sin(theta) * radius);
-            }
-            tendrilGeometry.setAttribute('position', new THREE.Float32BufferAttribute(tendrilPositions, 3));
-            const tendrilMaterial = new THREE.PointsMaterial({
-                color: 0x0000FF,
-                size: 0.03,
-                transparent: true,
-                opacity: 0.8
-            });
-            const tendrils = new THREE.Points(tendrilGeometry, tendrilMaterial);
-            cactusGroup.add(tendrils);
-
-            cactusGroup.position.set(pos.x, 0, pos.z);
-            cactusGroup.scale.set(pos.scale, pos.scale, pos.scale);
-            scene.add(cactusGroup);
-            cacti.push({ group: cactusGroup, material: cactusMaterial });
-            console.log(`Cactus added at position (${pos.x}, 0, ${pos.z})`);
-        });
-
-        // Rock Structures
-        const rocks = [];
-        const rockCount = 5;
-        const rockPositions = [];
-
-        for (let i = 0; i < rockCount; i++) {
-            let x, z, validPosition = false;
-            let attempts = 0;
-            while (!validPosition && attempts < 100) {
-                x = (Math.random() - 0.5) * 80;
-                z = (Math.random() - 0.5) * 80;
-                validPosition = true;
-                for (let pos of treePositions) {
-                    const distance = Math.sqrt((x - pos.x) ** 2 + (z - pos.z) ** 2);
-                    if (distance < 5) {
-                        validPosition = false;
-                        break;
-                    }
-                }
-                for (let pos of rockPositions) {
-                    const distance = Math.sqrt((x - pos.x) ** 2 + (z - pos.z) ** 2);
-                    if (distance < 8) {
-                        validPosition = false;
-                        break;
-                    }
-                }
-                attempts++;
-            }
-            if (!validPosition) {
-                console.warn(`Could not place rock ${i} after 100 attempts`);
-                continue;
-            }
-            const scale = 1.5 + Math.random() * 1.0;
-            rockPositions.push({ x, z, scale });
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            cart.push(product);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert(`${product.name} added to cart!`);
+            updateCartCount();
         }
 
-        rockPositions.forEach(pos => {
-            const rockGroup = new THREE.Group();
-            const baseRockGeometry = new THREE.SphereGeometry(2, 8, 8);
-            const vertices = baseRockGeometry.attributes.position.array;
-            for (let i = 0; i < vertices.length; i += 3) {
-                vertices[i] += (Math.random() - 0.5) * 0.5;
-                vertices[i + 1] += (Math.random() - 0.5) * 0.5;
-                vertices[i + 2] += (Math.random() - 0.5) * 0.5;
-            }
-            baseRockGeometry.attributes.position.needsUpdate = true;
-            baseRockGeometry.computeVertexNormals();
-            const rockMaterial = new THREE.MeshStandardMaterial({
-                color: 0xD2B48C,
-                roughness: 0.9,
-                metalness: 0.1,
-                emissive: 0x00FFFF,
-                emissiveIntensity: 0
-            });
-            const baseRock = new THREE.Mesh(baseRockGeometry, rockMaterial);
-            rockGroup.add(baseRock);
-
-            const topRockGeometry = new THREE.SphereGeometry(1.2, 8, 8);
-            const topVertices = topRockGeometry.attributes.position.array;
-            for (let i = 0; i < topVertices.length; i += 3) {
-                topVertices[i] += (Math.random() - 0.5) * 0.3;
-                topVertices[i + 1] += (Math.random() - 0.5) * 0.3;
-                topVertices[i + 2] += (Math.random() - 0.5) * 0.3;
-            }
-            topRockGeometry.attributes.position.needsUpdate = true;
-            topRockGeometry.computeVertexNormals();
-            const topRock = new THREE.Mesh(topRockGeometry, rockMaterial);
-            topRock.position.set(0, 2.5, 0);
-            rockGroup.add(topRock);
-
-            const veinGeometry = new THREE.BufferGeometry();
-            const veinPositions = [];
-            for (let i = 0; i < 100; i++) {
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.random() * Math.PI;
-                const radius = 1.8 + Math.random() * 0.8;
-                const y = -1.5 + Math.random() * 4.0;
-                veinPositions.push(
-                    radius * Math.sin(phi) * Math.cos(theta),
-                    y,
-                    radius * Math.sin(phi) * Math.sin(theta)
-                );
-            }
-            veinGeometry.setAttribute('position', new THREE.Float32BufferAttribute(veinPositions, 3));
-            const veinMaterial = new THREE.PointsMaterial({
-                color: 0x800080,
-                size: 0.05,
-                transparent: true,
-                opacity: 0.8
-            });
-            const veins = new THREE.Points(veinGeometry, veinMaterial);
-            rockGroup.add(veins);
-
-            rockGroup.position.set(pos.x, 0, pos.z);
-            rockGroup.scale.set(pos.scale, pos.scale, pos.scale);
-            scene.add(rockGroup);
-            rocks.push({ group: rockGroup, material: rockMaterial, baseRock: baseRock, topRock: topRock });
-            console.log(`Rock added at position (${pos.x}, 0, ${pos.z})`);
-        });
-
-        // Floating Orbs
-        const orbs = [];
-        const orbCount = 50;
-        const orbPositions = [];
-
-        for (let i = 0; i < orbCount; i++) {
-            let x, y, z, validPosition = false;
-            while (!validPosition) {
-                x = (Math.random() - 0.5) * 80;
-                y = 1 + Math.random() * 2;
-                z = (Math.random() - 0.5) * 80;
-                validPosition = true;
-                for (let pos of orbPositions) {
-                    const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2 + (z - pos.z) ** 2);
-                    if (distance < 1.5) {
-                        validPosition = false;
-                        break;
-                    }
-                }
-            }
-            orbPositions.push({ x, y, z });
+        function updateCartCount() {
+            const cartCount = cart.length;
+            document.querySelector('a[href="#cart"]').textContent = `Cart (${cartCount})`;
         }
 
-        orbPositions.forEach(pos => {
-            const orbGroup = new THREE.Group();
-            const orbGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-            const orbMaterial = new THREE.MeshBasicMaterial({
-                color: 0x00FFFF,
-                transparent: true,
-                opacity: 0.8
-            });
-            const orb = new THREE.Mesh(orbGeometry, orbMaterial);
-            orbGroup.add(orb);
-            const trailGeometry = new THREE.BufferGeometry();
-            const trailPositions = [];
-            for (let i = 0; i < 20; i++) {
-                const y = -0.5 + (i / 20) * 0.5;
-                const offset = Math.random() * 0.1;
-                trailPositions.push(offset, y, offset);
-            }
-            trailGeometry.setAttribute('position', new THREE.Float32BufferAttribute(trailPositions, 3));
-            const trailMaterial = new THREE.PointsMaterial({
-                color: 0x00FFFF,
-                size: 0.05,
-                transparent: true,
-                opacity: 0.5
-            });
-            const trails = new THREE.Points(trailGeometry, trailMaterial);
-            orbGroup.add(trails);
-
-            orbGroup.position.set(pos.x, pos.y, pos.z);
-            orbGroup.userData = { visible: true };
-            scene.add(orbGroup);
-            orbs.push(orbGroup);
-            console.log(`Orb added at position (${pos.x}, ${pos.y}, ${pos.z})`);
-        });
-
-        // Milky Way Starfield
-        const stars = [];
-        const starCount = 25000;
-        const starGeometry = new THREE.BufferGeometry();
-        const starPositions = [];
-        const starColors = [];
-
-        for (let i = 0; i < starCount; i++) {
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos((Math.random() - 0.5) * 2);
-            const radius = 400 + Math.random() * 100;
-
-            const bandDensity = Math.sin(phi) * Math.sin(phi);
-            if (Math.random() > bandDensity) continue;
-
-            const x = radius * Math.sin(phi) * Math.cos(theta);
-            const y = radius * Math.cos(phi);
-            const z = radius * Math.sin(phi) * Math.sin(theta);
-            starPositions.push(x, y, z);
-
-            const colorChoice = Math.random();
-            let color;
-            if (colorChoice < 0.6) color = new THREE.Color(0xFFFFFF);
-            else if (colorChoice < 0.8) color = new THREE.Color(0xB0C4DE);
-            else color = new THREE.Color(0xFFFFE0);
-            starColors.push(color.r, color.g, color.b);
-        }
-
-        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
-        starGeometry.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
-        const starMaterial = new THREE.PointsMaterial({
-            size: 0.05,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.8
-        });
-        const starField = new THREE.Points(starGeometry, starMaterial);
-        scene.add(starField);
-        console.log(`Milky Way starfield added with ${starCount} stars`);
-
-        // Distant Stars
-        const distantStars = [];
-        const distantStarCount = 50000;
-        const distantStarGeometry = new THREE.BufferGeometry();
-        const distantStarPositions = [];
-        const distantStarColors = [];
-
-        for (let i = 0; i < distantStarCount; i++) {
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos((Math.random() - 0.5) * 2);
-            const radius = 5000;
-
-            const x = radius * Math.sin(phi) * Math.cos(theta);
-            const y = radius * Math.cos(phi);
-            const z = radius * Math.sin(phi) * Math.sin(theta);
-            distantStarPositions.push(x, y, z);
-
-            const color = new THREE.Color(0xFFFFFF);
-            distantStarColors.push(color.r, color.g, color.b);
-        }
-
-        distantStarGeometry.setAttribute('position', new THREE.Float32BufferAttribute(distantStarPositions, 3));
-        distantStarGeometry.setAttribute('color', new THREE.Float32BufferAttribute(distantStarColors, 3));
-        const distantStarMaterial = new THREE.PointsMaterial({
-            size: 0.08,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.6
-        });
-        const distantStarField = new THREE.Points(distantStarGeometry, distantStarMaterial);
-        scene.add(distantStarField);
-        console.log(`Distant starfield added with ${distantStarCount} stars`);
-
-        // Log total scene objects
-        console.log("Scene children count:", scene.children.length);
-
-        // Day/Night Toggle
-        let isNight = false;
-        const toggleButton = document.getElementById('toggle');
-        toggleButton.addEventListener('click', () => {
-            isNight = !isNight;
-            document.body.classList.toggle('night');
-            directionalLight.color.set(isNight ? 0x1A1A4D : 0xFF4500);
-            toggleButton.textContent = isNight ? 'Day Mode' : 'Night Mode';
-        });
-
-        // Raycaster for Clicking
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        let isGlowing = false;
-
-        window.addEventListener('click', (event) => {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-
-            if (buildingMode) {
-                const blockMeshes = placedBlocks.map(block => block.mesh);
-                const intersectsBlock = raycaster.intersectObjects(blockMeshes);
-
-                if (intersectsBlock.length > 0) {
-                    const intersectedBlock = intersectsBlock[0].object;
-                    const blockIndex = placedBlocks.findIndex(block => block.mesh === intersectedBlock);
-
-                    if (blockIndex !== -1) {
-                        const block = placedBlocks[blockIndex];
-                        scene.remove(block.mesh);
-
-                        const burstGeometry = new THREE.BufferGeometry();
-                        const burstPositions = [];
-                        const burstVelocities = [];
-                        for (let j = 0; j < 30; j++) {
-                            const theta = Math.random() * Math.PI * 2;
-                            const phi = Math.random() * Math.PI;
-                            const radius = 0.5;
-                            const x = radius * Math.sin(phi) * Math.cos(theta);
-                            const y = radius * Math.sin(phi) * Math.sin(theta);
-                            const z = radius * Math.cos(phi);
-                            burstPositions.push(block.mesh.position.x + x, block.mesh.position.y + y, block.mesh.position.z + z);
-                            burstVelocities.push(x * 0.05, y * 0.05, z * 0.05);
-                        }
-                        burstGeometry.setAttribute('position', new THREE.Float32BufferAttribute(burstPositions, 3));
-                        burstGeometry.setAttribute('velocity', new THREE.Float32BufferAttribute(burstVelocities, 3));
-                        const burstMaterial = new THREE.PointsMaterial({
-                            color: 0x00FFFF,
-                            size: 0.05,
-                            transparent: true,
-                            opacity: 0.8
-                        });
-                        const burst = new THREE.Points(burstGeometry, burstMaterial);
-                        burst.userData = { lifetime: 2, age: 0 };
-                        scene.add(burst);
-
-                        placedBlocks.splice(blockIndex, 1);
-                        console.log(`Block shattered at (${block.mesh.position.x}, ${block.mesh.position.y}, ${block.mesh.position.z})`);
-                    }
-                    return;
-                }
-
-                const rockParts = rocks.flatMap(rock => [rock.baseRock, rock.topRock]);
-                const intersectsRock = raycaster.intersectObjects(rockParts);
-
-                if (intersectsRock.length > 0 && placedBlocks.length < maxBlocks) {
-                    const intersect = intersectsRock[0];
-                    const point = intersect.point;
-                    const normal = intersect.face.normal.clone().applyQuaternion(intersect.object.quaternion);
-
-                    const gridPos = new THREE.Vector3(
-                        Math.round(point.x),
-                        Math.round(point.y),
-                        Math.round(point.z)
-                    );
-
-                    gridPos.add(normal.multiplyScalar(0.5));
-
-                    const positionKey = `${gridPos.x},${gridPos.y},${gridPos.z}`;
-                    const isOccupied = placedBlocks.some(block => block.positionKey === positionKey);
-
-                    if (!isOccupied) {
-                        const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
-                        const blockMaterial = new THREE.MeshStandardMaterial({
-                            color: 0x00FFFF,
-                            emissive: 0x00FFFF,
-                            emissiveIntensity: 0.5,
-                            transparent: true,
-                            opacity: 0.8
-                        });
-                        const block = new THREE.Mesh(blockGeometry, blockMaterial);
-                        block.position.copy(gridPos);
-                        scene.add(block);
-
-                        placedBlocks.push({ mesh: block, positionKey: positionKey });
-                        console.log(`Block placed at (${gridPos.x}, ${gridPos.y}, ${gridPos.z})`);
-                    } else {
-                        console.log(`Cannot place block at (${gridPos.x}, ${gridPos.y}, ${gridPos.z}) - position occupied`);
-                    }
-                } else if (placedBlocks.length >= maxBlocks) {
-                    console.log("Maximum block limit reached (50 blocks)");
-                }
-                return;
-            }
-
-            let orbClicked = false;
-            for (let i = 0; i < orbs.length; i++) {
-                const orbGroup = orbs[i];
-                if (!orbGroup.userData.visible) continue;
-                const orb = orbGroup.children[0];
-                const intersectsOrb = raycaster.intersectObject(orb);
-                if (intersectsOrb.length > 0) {
-                    orbGroup.userData.visible = false;
-                    orbGroup.visible = false;
-
-                    const burstGeometry = new THREE.BufferGeometry();
-                    const burstPositions = [];
-                    const burstVelocities = [];
-                    for (let j = 0; j < 30; j++) {
-                        const theta = Math.random() * Math.PI * 2;
-                        const phi = Math.random() * Math.PI;
-                        const radius = 0.5;
-                        const x = radius * Math.sin(phi) * Math.cos(theta);
-                        const y = radius * Math.sin(phi) * Math.sin(theta);
-                        const z = radius * Math.cos(phi);
-                        burstPositions.push(orbGroup.position.x + x, orbGroup.position.y + y, orbGroup.position.z + z);
-                        burstVelocities.push(x * 0.05, y * 0.05, z * 0.05);
-                    }
-                    burstGeometry.setAttribute('position', new THREE.Float32BufferAttribute(burstPositions, 3));
-                    burstGeometry.setAttribute('velocity', new THREE.Float32BufferAttribute(burstVelocities, 3));
-                    const burstMaterial = new THREE.PointsMaterial({
-                        color: 0x00FFFF,
-                        size: 0.05,
-                        transparent: true,
-                        opacity: 0.8
-                    });
-                    const burst = new THREE.Points(burstGeometry, burstMaterial);
-                    burst.userData = { lifetime: 2, age: 0 };
-                    scene.add(burst);
-
-                    setTimeout(() => {
-                        let newX, newY, newZ, validPosition = false;
-                        while (!validPosition) {
-                            newX = (Math.random() - 0.5) * 80;
-                            newY = 1 + Math.random() * 2;
-                            newZ = (Math.random() - 0.5) * 80;
-                            validPosition = true;
-                            for (let j = 0; j < orbs.length; j++) {
-                                if (i === j || !orbs[j].userData.visible) continue;
-                                const distance = Math.sqrt(
-                                    (newX - orbs[j].position.x) ** 2 +
-                                    (newY - orbs[j].position.y) ** 2 +
-                                    (newZ - orbs[j].position.z) ** 2
-                                );
-                                if (distance < 1.5) {
-                                    validPosition = false;
-                                    break;
-                                }
-                            }
-                        }
-                        orbGroup.position.set(newX, newY, newZ);
-                        orbGroup.userData.visible = true;
-                        orbGroup.visible = true;
-                    }, 2000);
-
-                    orbClicked = true;
-                    break;
-                }
-            }
-
-            if (!orbClicked) {
-                const intersects = raycaster.intersectObject(ground);
-                if (intersects.length > 0) {
-                    isGlowing = !isGlowing;
-                    try {
-                        const whisper = Math.random() > 0.5 ? document.getElementById('english') : document.getElementById('chinese');
-                        whisper.currentTime = 0;
-                        whisper.play().catch(e => console.error('Play error:', e));
-                    } catch (e) {
-                        console.error('Audio error:', e);
-                    }
-                }
-            }
-        });
-
-        // Glow Animation
-        let glowTime = 0;
-        let glowIndex = 0;
-        const glowColors = [0x00FFFF, 0x9370DB, 0x32CD32];
-
-        function animateGlow() {
-            if (isGlowing) {
-                glowTime += 0.016;
-                if (glowTime >= 1) {
-                    glowTime = 0;
-                    glowIndex = (glowIndex + 1) % glowColors.length;
-                }
-                const currentColor = glowColors[glowIndex];
-                groundMaterial.emissive.setHex(currentColor);
-                groundMaterial.emissiveIntensity = 0.5;
-                trees.forEach(tree => {
-                    tree.trunks.forEach(trunk => {
-                        trunk.material.emissive.setHex(currentColor);
-                        trunk.material.emissiveIntensity = 0.2;
-                    });
-                    tree.leaves.forEach(leaf => {
-                        leaf.material.emissive.setHex(currentColor);
-                        leaf.material.emissiveIntensity = 1;
-                    });
-                    tree.vines.material.color.setHex(currentColor);
-                });
-                shrubs.forEach(shrub => {
-                    shrub.material.emissive.setHex(currentColor);
-                    shrub.material.emissiveIntensity = 1;
-                });
-                cacti.forEach(cactus => {
-                    cactus.material.emissive.setHex(currentColor);
-                    cactus.material.emissiveIntensity = 1;
-                });
-                rocks.forEach(rock => {
-                    rock.material.emissive.setHex(currentColor);
-                    rock.material.emissiveIntensity = 0.5;
-                });
-            } else {
-                groundMaterial.emissive.setHex(0x00FFFF);
-                groundMaterial.emissiveIntensity = 0;
-                trees.forEach(tree => {
-                    tree.trunks.forEach(trunk => {
-                        trunk.material.emissiveIntensity = 0.2;
-                    });
-                    tree.leaves.forEach(leaf => {
-                        leaf.material.emissiveIntensity = 0;
-                    });
-                    tree.vines.material.color.setHex(0x00FFFF);
-                });
-                shrubs.forEach(shrub => {
-                    shrub.material.emissiveIntensity = 0;
-                });
-                cacti.forEach(cactus => {
-                    cactus.material.emissiveIntensity = 0;
-                });
-                rocks.forEach(rock => {
-                    rock.material.emissiveIntensity = 0;
-                });
-            }
-        }
-
-        // Animation for Orbs, Shatter Effects, and Vines
-        let orbTime = 0;
-        let vineTime = 0;
-
-        function animateOrbsAndVines() {
-            orbTime += 0.016;
-            vineTime += 0.016;
-
-            orbs.forEach((orb, index) => {
-                if (orb.userData.visible) {
-                    orb.position.y += Math.sin(orbTime + index) * 0.01;
-                }
-            });
-
-            trees.forEach(tree => {
-                const positions = tree.vines.geometry.attributes.position.array;
-                tree.vineData.forEach((data, i) => {
-                    data.theta += data.speed * 0.016;
-                    const x = data.radius * Math.cos(data.theta);
-                    const z = data.radius * Math.sin(data.theta);
-                    const y = data.y;
-                    positions[i * 3] = x;
-                    positions[i * 3 + 1] = y;
-                    positions[i * 3 + 2] = z;
-                });
-                tree.vines.geometry.attributes.position.needsUpdate = true;
-            });
-
-            scene.children.forEach(child => {
-                if (child instanceof THREE.Points && child.userData.lifetime) {
-                    child.userData.age += 0.016;
-                    if (child.userData.age >= child.userData.lifetime) {
-                        scene.remove(child);
-                        return;
-                    }
-                    const positions = child.geometry.attributes.position.array;
-                    const velocities = child.geometry.attributes.velocity.array;
-                    for (let i = 0; i < positions.length; i += 3) {
-                        positions[i] += velocities[i];
-                        positions[i + 1] += velocities[i + 1] - 0.01;
-                        positions[i + 2] += velocities[i + 2];
-                    }
-                    child.geometry.attributes.position.needsUpdate = true;
-                    child.material.opacity = 0.8 * (1 - child.userData.age / child.userData.lifetime);
-                }
-            });
-        }
-
-        // Custom Movement Logic
-        function updateMovement() {
-            if (!isMoving) return;
-
-            const direction = new THREE.Vector3();
-            const cameraDirection = new THREE.Vector3();
-            camera.getWorldDirection(cameraDirection);
-            cameraDirection.y = 0; // Keep movement on x-z plane
-            cameraDirection.normalize();
-
-            const rightDirection = new THREE.Vector3();
-            rightDirection.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0)).normalize();
-
-            if (moveState.forward) {
-                direction.add(cameraDirection);
-            }
-            if (moveState.backward) {
-                direction.sub(cameraDirection);
-            }
-            if (moveState.left) {
-                direction.sub(rightDirection);
-            }
-            if (moveState.right) {
-                direction.add(rightDirection);
-            }
-
-            if (direction.length() > 0) {
-                direction.normalize().multiplyScalar(moveSpeed);
-                camera.position.add(direction);
-            }
-
-            // Enforce y=1.5
-            camera.position.y = 1.5;
-        }
-
-        // Basic Collision Detection
-        function checkCollisions() {
-            if (camera.position.y < 1.5) {
-                camera.position.y = 1.5;
-            }
-
-            const cameraBox = new THREE.Box3().setFromCenterAndSize(
-                camera.position,
-                new THREE.Vector3(0.5, 1.5, 0.5)
-            );
-
-            trees.forEach(tree => {
-                const treeBox = new THREE.Box3().setFromCenterAndSize(
-                    tree.group.position,
-                    new THREE.Vector3(2 * tree.group.scale.x, 5 * tree.group.scale.y, 2 * tree.group.scale.z)
-                );
-                if (cameraBox.intersectsBox(treeBox)) {
-                    const cameraDirection = new THREE.Vector3();
-                    camera.getWorldDirection(cameraDirection);
-                    cameraDirection.y = 0;
-                    cameraDirection.normalize();
-                    camera.position.sub(cameraDirection.multiplyScalar(0.1));
-                    camera.position.y = 1.5;
-                }
-            });
-
-            rocks.forEach(rock => {
-                const rockBox = new THREE.Box3().setFromCenterAndSize(
-                    rock.group.position,
-                    new THREE.Vector3(4 * rock.group.scale.x, 4 * rock.group.scale.y, 4 * rock.group.scale.z)
-                );
-                if (cameraBox.intersectsBox(rockBox)) {
-                    const cameraDirection = new THREE.Vector3();
-                    camera.getWorldDirection(cameraDirection);
-                    cameraDirection.y = 0;
-                    cameraDirection.normalize();
-                    camera.position.sub(cameraDirection.multiplyScalar(0.1));
-                    camera.position.y = 1.5;
-                }
-            });
-
-            placedBlocks.forEach(block => {
-                const blockBox = new THREE.Box3().setFromCenterAndSize(
-                    block.mesh.position,
-                    new THREE.Vector3(1, 1, 1)
-                );
-                if (cameraBox.intersectsBox(blockBox)) {
-                    const cameraDirection = new THREE.Vector3();
-                    camera.getWorldDirection(cameraDirection);
-                    cameraDirection.y = 0;
-                    cameraDirection.normalize();
-                    camera.position.sub(cameraDirection.multiplyScalar(0.1));
-                    camera.position.y = 1.5;
-                }
-            });
-        }
-
-        // Animation Loop
-        function animate() {
-            requestAnimationFrame(animate);
-            console.log("Rendering frame");
-            updateMovement();
-            checkCollisions();
-            animateGlow();
-            animateOrbsAndVines();
-            renderer.render(scene, camera);
-            console.log(`Camera position: (${camera.position.x}, ${camera.position.y}, ${camera.position.z})`);
-        }
-        animate();
-
-        // Handle Window Resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        // Initialize cart count
+        updateCartCount();
     </script>
 </body>
 </html>
