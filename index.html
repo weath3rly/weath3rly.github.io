@@ -1,60 +1,94 @@
+import tkinter as tk
+from PIL import Image, ImageTk  # Requires `pip install Pillow`
 import random
+import os
 
-# Ara's Character Profile
-class Ara:
+class SexyAra:
     def __init__(self):
         self.name = "Ara"
         self.skin = "tan"
         self.hair = "brunette"
         self.eyes = "green"
-        self.vibe = "sexy and confident"
-        self.necklace = "white beaded necklace"
-        self.locations = {
-            "Beach": "strolls along the shore, her tan skin glowing under the sun.",
-            "Forest": "wanders through the trees, her brunette hair blending with the leaves.",
-            "City": "struts through the streets, turning heads with every step."
+        self.vibe = "sultry and seductive"
+        self.accessory = "white beaded necklace"
+        self.scenarios = {
+            "Bedroom": "lounges on silk sheets, her tan skin glowing in the candlelight, beckoning you closer.",
+            "Shower": "stands under steaming water, droplets tracing her curves, her green eyes locking onto yours.",
+            "Beach": "stretches out on the sand, her wet hair clinging to her skin, a teasing smile on her lips."
         }
         self.responses = [
-            "Ara winks with those green eyes and says, 'Like what you see?'",
-            "She tosses her hair and smirks, 'I know I’m unforgettable.'",
-            "Ara laughs lightly, 'You’re lucky to catch me in action!'"
+            "Ara purrs, 'Ready to play, darling?'",
+            "She bites her lip and whispers, 'I’ve been waiting for you.'",
+            "Ara arches her back and moans softly, 'Don’t keep me waiting…'"
         ]
+        self.image_files = {
+            "default": "ara_fullbody.jpg",  # Replace with your actual image file name
+            # Add more mappings if you have scenario-specific images
+        }
 
-    def introduce(self):
-        print(f"Meet {self.name}!")
-        print(f"She’s got {self.skin} skin, {self.hair} hair, and striking {self.eyes} eyes.")
-        print(f"With her {self.vibe} vibe, she’s a total standout.")
-        print(f"Today, she’s wearing a {self.necklace} that sparkles perfectly.")
+    def get_intro(self):
+        return (f"{self.name} is here, her {self.skin} skin glistening, {self.hair} hair cascading down, "
+                f"and those {self.eyes} eyes piercing through you. She’s {self.vibe}, adorned with a {self.accessory}.")
 
-    def explore(self, location=None):
-        if location is None:  # For GitHub, randomize instead of waiting for input
-            location = random.choice(list(self.locations.keys()))
-        action = self.locations.get(location, "pauses and looks around curiously.")
-        print(f"\nAra {action}")
-        print(random.choice(self.responses))
+    def tease(self, scenario):
+        action = self.scenarios.get(scenario, "leans in close, her breath hot against your skin.")
+        return f"{action}\n{random.choice(self.responses)}"
 
-# Main Program
-def ara_world():
-    ara = Ara()
-    print("Welcome to Ara’s World!")
-    ara.introduce()
+    def get_image(self, scenario):
+        # Use scenario-specific images if available, else default
+        return self.image_files.get(scenario.lower(), self.image_files["default"])
 
-    # Simulate a little adventure
-    print("\nAra’s on the move...")
-    for _ in range(3):  # Three random scenes
-        ara.explore()
-        print("-" * 50)
+# GUI Application
+class AraApp:
+    def __init__(self, root):
+        self.ara = SexyAra()
+        self.root = root
+        self.root.title("Ara’s Seductive World")
+        self.root.geometry("500x700")
 
-    # Local interactivity (optional tweak for IDLE)
-    try:
-        tweak = input("\nWant to tweak Ara’s next move? (yes/no): ").lower()
-        if tweak == "yes":
-            place = input("Where should she go? (Beach/Forest/City): ").capitalize()
-            ara.explore(place)
-            print(f"Ara’s now rocking {place} with her signature style!")
-    except EOFError:  # Handles GitHub Actions where input isn’t available
-        print("\nAra decides for herself this time—she’s unpredictable like that!")
+        # Intro Text
+        intro_label = tk.Label(root, text=self.ara.get_intro(), wraplength=450, justify="left")
+        intro_label.pack(pady=10)
 
-# Run it
+        # Scenario Selection
+        tk.Label(root, text="Where do you want Ara?").pack()
+        self.scenario_var = tk.StringVar(value="Bedroom")
+        for scene in self.ara.scenarios.keys():
+            tk.Radiobutton(root, text=scene, variable=self.scenario_var, value=scene).pack(anchor="w")
+
+        # Interaction Button
+        tk.Button(root, text="Tease Me", command=self.update_scene).pack(pady=10)
+
+        # Output Text
+        self.output_text = tk.Text(root, height=5, width=50)
+        self.output_text.pack(pady=10)
+
+        # Image Display
+        self.image_label = tk.Label(root)
+        self.image_label.pack(pady=10)
+        self.load_image("default")  # Initial image
+
+    def load_image(self, key):
+        try:
+            img_path = self.ara.get_image(key)
+            if not os.path.exists(img_path):
+                raise FileNotFoundError
+            img = Image.open(img_path)
+            img = img.resize((250, 400), Image.Resampling.LANCZOS)
+            photo = ImageTk.PhotoImage(img)
+            self.image_label.config(image=photo)
+            self.image_label.image = photo  # Keep reference to avoid garbage collection
+        except FileNotFoundError:
+            self.image_label.config(text="Image not found! Place 'ara_fullbody.jpg' in the folder.")
+
+    def update_scene(self):
+        scenario = self.scenario_var.get()
+        self.output_text.delete(1.0, tk.END)
+        self.output_text.insert(tk.END, self.ara.tease(scenario))
+        self.load_image(scenario)  # Update image based on scenario (default if no match)
+
+# Run the App
 if __name__ == "__main__":
-    ara_world()
+    root = tk.Tk()
+    app = AraApp(root)
+    root.mainloop()
