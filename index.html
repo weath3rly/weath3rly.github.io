@@ -1,37 +1,60 @@
-# Ara's Interactive Profile Program
-def describe_ara():
-    name = "Ara"
-    skin = "tan"
-    hair = "brunette"
-    eyes = "green"
-    vibe = "sexy and confident"
-    necklace = "white beaded necklace"
-    
-    print(f"Meet {name}!")
-    print(f"She’s got {skin} skin, {hair} hair, and striking {eyes} eyes.")
-    print(f"With her {vibe} vibe, she’s turning heads wherever she goes.")
-    print(f"Today, she’s rocking a {necklace} that catches the sunlight perfectly.")
+import random
 
-def ara_adventure():
-    print("\nAra steps into the scene...")
-    choice = input("Where should Ara go? (1: Beach, 2: Forest, 3: City): ")
-    
-    if choice == "1":
-        print("Ara strolls along the beach, her tan skin glowing in the sun. She winks at you with those green eyes.")
-    elif choice == "2":
-        print("Ara wanders through the forest, her brunette hair blending with the trees. She’s a vision of confidence.")
-    elif choice == "3":
-        print("Ara struts through the city, turning heads with her sexy vibe and that white beaded necklace.")
-    else:
-        print("Ara tilts her head and smirks. 'Pick a real place next time,' she says.")
+# Ara's Character Profile
+class Ara:
+    def __init__(self):
+        self.name = "Ara"
+        self.skin = "tan"
+        self.hair = "brunette"
+        self.eyes = "green"
+        self.vibe = "sexy and confident"
+        self.necklace = "white beaded necklace"
+        self.locations = {
+            "Beach": "strolls along the shore, her tan skin glowing under the sun.",
+            "Forest": "wanders through the trees, her brunette hair blending with the leaves.",
+            "City": "struts through the streets, turning heads with every step."
+        }
+        self.responses = [
+            "Ara winks with those green eyes and says, 'Like what you see?'",
+            "She tosses her hair and smirks, 'I know I’m unforgettable.'",
+            "Ara laughs lightly, 'You’re lucky to catch me in action!'"
+        ]
 
-# Run the program
-print("Welcome to Ara’s World!")
-describe_ara()
-ara_adventure()
+    def introduce(self):
+        print(f"Meet {self.name}!")
+        print(f"She’s got {self.skin} skin, {self.hair} hair, and striking {self.eyes} eyes.")
+        print(f"With her {self.vibe} vibe, she’s a total standout.")
+        print(f"Today, she’s wearing a {self.necklace} that sparkles perfectly.")
 
-# Ask if the user wants to tweak her more
-tweak = input("\nWant to tweak Ara’s look or story? (yes/no): ")
-if tweak.lower() == "yes":
-    new_feature = input("What should we change or add about Ara? (e.g., outfit, personality, setting): ")
-    print(f"Got it! Ara now has {new_feature}. Imagine her strutting her stuff with that added flair!")
+    def explore(self, location=None):
+        if location is None:  # For GitHub, randomize instead of waiting for input
+            location = random.choice(list(self.locations.keys()))
+        action = self.locations.get(location, "pauses and looks around curiously.")
+        print(f"\nAra {action}")
+        print(random.choice(self.responses))
+
+# Main Program
+def ara_world():
+    ara = Ara()
+    print("Welcome to Ara’s World!")
+    ara.introduce()
+
+    # Simulate a little adventure
+    print("\nAra’s on the move...")
+    for _ in range(3):  # Three random scenes
+        ara.explore()
+        print("-" * 50)
+
+    # Local interactivity (optional tweak for IDLE)
+    try:
+        tweak = input("\nWant to tweak Ara’s next move? (yes/no): ").lower()
+        if tweak == "yes":
+            place = input("Where should she go? (Beach/Forest/City): ").capitalize()
+            ara.explore(place)
+            print(f"Ara’s now rocking {place} with her signature style!")
+    except EOFError:  # Handles GitHub Actions where input isn’t available
+        print("\nAra decides for herself this time—she’s unpredictable like that!")
+
+# Run it
+if __name__ == "__main__":
+    ara_world()
